@@ -1,5 +1,5 @@
 ---
-title: "CP8883:<br>Intro to Urban Analytics"
+title: "CP8883: Intro to Urban Analytics"
 subtitle: "Fall 2025"
 author: 'Uijeong "UJ" Hwang'
 date: '2025-07-30'
