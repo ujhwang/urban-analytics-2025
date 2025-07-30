@@ -1,0 +1,255 @@
+---
+title: "CP8883:<br>Intro to Urban Analytics"
+subtitle: "Fall 2025"
+author: 'Uijeong "UJ" Hwang'
+date: '2025-07-30'
+output:
+  distill::distill_article:
+    toc: true
+---
+
+<style>
+  main {
+    max-width: 90vw;
+  }
+</style>
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(gt)
+library(tidyverse)
+library(kableExtra)
+```
+
+
+# General Information
+
+* **Classroom**: Room 358 in Arch-West | MW 5:00-6:15PM
+* **Office hours (online)**: Thursday 4:30-6:30PM ([link](https://urban-analytics-2025.youcanbook.me/))
+
+This course aims to introduce students to the field of urban analytics, an emerging area of study that combines new forms of data with innovative computational approaches to better understand and manage urban processes. With the increasing availability of data, we now have the opportunity to ask more complex questions about how cities function and how they impact the quality of life for residents and the environment. Throughout this course, we will explore key theories and concepts in urban analytics and provide students with foundational analytical skills in this field. By the end of the course, students will have a practical understanding of how data and advanced analytical techniques can be used to enhance city planning and management.
+
+
+# Prerequisites
+There are no prerequisites to this course, but the followings are encouraged:
+
+* Basic understanding of geographic information systems (GIS) and applied statistics  
+* Working knowledge of any programming language, preferably the R (or Python)
+
+# Course Goals and Learning Outcomes 
+After successfully completing this course, students will: 
+
+* List sources of data from urban areas and why each of them would be used
+* Explain what is on the cutting edge of urban analytics research
+* Describe a few types of measurements for spatial data
+* Explain characteristics of data types
+* Learn how to clean and manipulate spatial data using technical analysis skills 
+* Create a basic data visualization
+* Be critical about who is creating and using data
+
+# Course schedules
+
+```{r include=F}
+total_week = 16
+
+# Week df
+weeks <- tibble(
+  Module = c(
+    rep("Module 0: <br> Preparation", 2),
+    rep("Module 1: <br> POI & Census", 3), # 2 days, 4 weeks
+    rep("Module 2: <br> Graphic communication and storytelling", 2),
+    rep("Module 3: <br> Transportation", 2),
+    rep("Module 4: <br> Urban image & computer vision", 2),
+    rep("Module 5: <br> Social media", 2),
+    rep("Module 6: <br> Data ethics", 1),
+    rep("Final Project Lab", 1),
+    rep("Student <br> Presentations", 1)
+  ),
+  Week = as.character(rep(1:total_week))
+  ) 
+
+# Dates
+day <- c("Aug 18, 20", "Aug 25, 27", "Sep 3", "Sep 8, 10", "Sep 15, 17", "Sep 22, 24", "Sep 29<br>Oct 1", "Oct 8", "Oct 13, 15", "Oct 20, 22", "Oct 27, 29", "Nov 3, 5", "Nov 10, 12", "Nov 17, 19", "Nov 24", "Dec 1, 3")
+
+weeks$Week <- paste(weeks$Week, "<br><font size=2 color=gray>", day, "</font>")
+
+```
+
+```{r, echo=FALSE}
+topic_col <- c(
+  "Introduction: Class structure, format & expectations [(Slide)](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg), <br> 
+  Intro to R - #1 [(Slide)](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg)",# 1
+  
+  "Intro to R - #2 [(Slide)](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg) <br> 
+  Data for Urban Analytics [(Slide)](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg)",# 2
+  
+  "Accessing Data via API [(Slide)](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg)",# 3
+  
+  "Census & Yelp API ([RMD](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg), 
+  [HTML](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg)) <br> Data Wrangling [(Slide)](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg)",# 4
+  
+  "Data Wrangling: Hands-on ([RMD](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg),
+  [HTML](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg)) <br> Deriving Insights from Your Data [(Slide)](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg)",# 5
+  
+  "Deriving Insights from Your Data: Hands-on ([RMD](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg),
+  [HTML](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg)) <br> Storytelling with Data [(Slide)](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg)",# 6
+  
+  "Interactive Visualization 1 ([RMD](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg),
+  [HTML](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg))<br>
+  Interactive Visualization 2 
+  ([RMD](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg),
+  [HTML](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg)) <br> <b> Student Presentation of Final Project Idea and Review of Literature/Examples (Oct 1) </b>",# 7
+  
+  "Handling Transportation Data in R
+  ([Slide](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg))", # 8
+  
+  "General Transit Feed Specification ([RMD](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg),
+  [HTML](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg)) <br> Open Street Map ([RMD](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg),
+  [HTML](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg))",# 9
+  
+  "Urban Images & Computer Vision [(Slide)](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg)<br> Applications of Computer Vision in Urban Studies [(Slide)](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg)",# 10
+  
+  "Sampling & Processing Images ([RMD](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg),
+  [HTML](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg)) <br>
+  Computer Vision ([Colab](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg), [RMD](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg), [HTML](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg))",# 11
+  
+  "<b>Student Presentation of Final Project Data, Methods, & Preliminary Results (Nov 5)</b> <br> Social Media Analysis ([Slide](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg)) <br>",# 12
+  
+  "Getting & Processing Reddit Data in R ([RMD](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg),
+  [HTML](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg))<br> Sentiment Analysis ([RMD](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg),
+  [HTML](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg), [Colab](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg))
+  ",# 13
+  
+  "Guest Lecture ([link](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg))<br> [(Slide)](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg)",# 14
+  
+  "Assistance with Final Project Related Issues",# 15
+  
+  "<b> Student Presentation of Final Project (Dec 1)</b><br> Wrap Up"# 16
+)
+
+
+reading_col <- c(
+  "[1](https://journals.sagepub.com/doi/full/10.1177/2399808319839494),
+  [2](https://r4ds.had.co.nz/workflow-basics.html)",# 1
+
+  "[1](https://r4ds.had.co.nz/transform.html),
+   [2](https://geocompr.robinlovelace.net/spatial-class.html), 
+  [3](https://geocompr.robinlovelace.net/attr.html), [4](https://geocompr.robinlovelace.net/spatial-operations.html), 
+  [5](https://rmarkdown.rstudio.com/lesson-1.html)",# 2
+  "", # 3
+  "[1](https://dl.acm.org/doi/abs/10.1145/3152178.3152181?casa_token=TKWejCaCUvgAAAAA:B78bsMo0gT6t2GSsl1MQWAIsXs0BCG6usrW5fwpKPYhorO0lKTpXNHUmPQQ0y4xeJYC3U5CF08hjIA), [2](https://www.nber.org/system/files/working_papers/w24952/w24952.pdf), [3](https://www.sciencedirect.com/science/article/abs/pii/S0198971523000935)",# 4
+  "[1](https://www.researchgate.net/publication/215990669_Tidy_data), [2](https://r4ds.had.co.nz/tidy-data.html)", # 5
+  "[1](https://r4ds.had.co.nz/model-intro.html), [2](https://r4ds.had.co.nz/model-basics.html), [3](https://r4ds.had.co.nz/model-building.html), [4](https://r4ds.had.co.nz/many-models.html)",# 6
+  "[1](https://r4ds.had.co.nz/data-visualisation.html), [2](https://r4ds.had.co.nz/graphics-for-communication.html)",# 7
+  "",# 8
+  "",# 9
+  "[1](https://www.sciencedirect.com/science/article/pii/S0264275119308443?casa_token=ttj9fEoFey4AAAAA:nR_Wf8tJHv8vfLv93cIlRHlsIqGdUMWByA3AyXcP_zWEYwJAPGKaxZ9TsdwiZlfX1-L8Z0Y7ag), [2](https://www.researchgate.net/profile/Bon-Woo-Koo/publication/351636921_How_are_Neighborhood_and_Street-Level_Walkability_Factors_Associated_with_Walking_Behaviors_A_Big_Data_Approach_Using_Street_View_Images/links/618548fba767a03c14f92f6f/How-are-Neighborhood-and-Street-Level-Walkability-Factors-Associated-with-Walking-Behaviors-A-Big-Data-Approach-Using-Street-View-Images.pdf), [3](https://link.springer.com/content/pdf/10.1007/978-3-030-84459-2_7.pdf)",# 10
+  "",# 11
+        # https://www.sciencedirect.com/science/article/pii/S2211335519300440
+  "[1](https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0142209), [2](https://ascpt.onlinelibrary.wiley.com/doi/pdf/10.1111/cts.12178), [3](https://www.sciencedirect.com/science/article/pii/S030324342200109X?via%3Dihub)", # 12
+        # https://ascpt.onlinelibrary.wiley.com/doi/pdf/10.1111/cts.12178
+        # https://ojs.aaai.org/index.php/ICWSM/article/view/14168
+        # https://journalofbigdata.springeropen.com/articles/10.1186/s40537-021-00525-8
+        # https://dl.acm.org/doi/pdf/10.1145/2001269.2001297
+  "",# 13
+  "[1](https://scholarship.law.gwu.edu/cgi/viewcontent.cgi?article=1159&context=faculty_publications), [2](https://openyls.law.yale.edu/handle/20.500.13051/7808), [3](https://web.stanford.edu/dept/HPS/Design%20AI%20so%20that%20it%27s%20fair.pdf), [4](https://www.nature.com/articles/541458a)",# 14
+  "",# 15
+  ""# 16
+) 
+
+# For collapse_row function's bugfix, 
+# kableExtra was downloaded from 
+# devtools::install_github(repo="haozhu233/kableExtra", ref="a6af5c0")
+
+assignment_col <- c(
+  "",# 1
+  "",# 2
+  "",# 3
+  "[Mini 1](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg) <br> (due <br> Sep 19)",# 4
+  "[Mini 2](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg) <br> (due <br> Sep 26)",# 5
+  "[Mini 3](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg) <br> (due <br> Oct 3)", # 6
+  "[Mini 4](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg) <br> (due <br> Oct 10)",# 7
+  "", # 8
+  "[Major 1](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg) <br> (due <br> Oct 30)",# 9 
+  "",# 10
+  "[Major 2](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg) <br> (due <br> Nov 14)",# 11
+  "",# 12
+  "[Major 3](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg) <br> (due <br> Nov 28)",# 13
+  "",# 14
+  "",# 15
+  "<b> Project Report<br> (due <br> Dec 05) </b>"# 16
+)
+
+weeks %>%
+  cbind("Topic" = topic_col) %>%
+  cbind("Reading" = reading_col) %>% 
+  cbind("To do" = assignment_col) %>% 
+  kbl(escape = F) %>%
+  column_spec(1, width = "12em") %>% 
+  column_spec(3, width = "50em") %>% 
+  column_spec(5, width = "10em") %>% 
+  kable_styling(bootstrap_options = c("condensed")) %>%
+  collapse_rows(columns = 1:2, valign = "top") 
+```
+*NOTE 1: Slide = lecture Slide; RMD = R Markdown script; HTML = web document*
+
+*NOTE 2: The links to the class material will be updated each week.*
+
+
+# How to succeed in this class
+1. Be prepared for occasional frustration. It’s part of learning process. However, don’t spin the wheel. You are responsible for actively searching for help. Don’t wait until the last minute (e.g., homework).
+2. Read assigned book chapters/materials, review their examples and snippets, replicate their results, and repeat until you understand.
+3. Work with peers. Form a group early in the semester, and have their sharp eyes on your code. Still, you need to submit your HW individually.
+4. If you have a trouble with your code outside of class (and get frustrated), Google it. It will not only be faster and more efficient than contacting us, but trouble-shooting on your own is essential skill, particularly after you graduate. Luckily, most of the problems you may encounter in this class have been already encountered by others. You can search how they solved them in Stack Overflow.
+5. Of course, you can ask questions to us anytime, inside or outside classroom. I strongly encourage you to utilize our office hours as another learning opportunity.
+
+# Grading breakdown
+There are three major assignments, four mini assignments, and one final team project. Project presentation is based on PowerPoint slides (or other presentation tool of your choice.) Project report should be an HTML document rendered from R Markdown (or other tool of your choice).
+
+
+```{r echo=F}
+data.frame('Assignment Type' = c("Final Project Presentation", 
+                                 "Final Project Report",
+                                 'Major Assignment', 
+                                 'Mini Assignment', 
+                                 "Participation"),
+           'Percent' = c("15%",
+                         "15%",
+                         "45% (15% each x 3)", 
+                         "20% (5% each x 4)", 
+                         "5%")) %>% 
+  kbl() %>% 
+  kable_styling(bootstrap_options = c("condensed", "responsive"))
+
+```
+
+The final grade will be assigned as a letter grade according to the following scale:
+
+* **A $~~~$ 100%-90%** $~~~$ Excellent (4 quality points per credit hour)
+* **B $~~~$ 89% - 80%** $~~~$ Good (3 quality points per credit hour)
+* **C $~~~$ 79% - 70%** $~~~$ Satisfactory (2 quality points per credit hour)
+* **D $~~~$ 69% - 60%** $~~~$ Passing (1 quality points per credit hour)
+* **F $~~~$ 59% $~$-$~$ 0%** $~~~$ Failure (0 quality points per credit hour)
+
+# Textbooks/resources
+There is no textbook associated with this course. I highly recommend Data Action by Sarah Williams, and Urban Analytics by Alex Singleton, Seth Spielman and David Folch is another popular textbook on the topic.
+
+Here are some other free resources:
+
+* [R for Data Science](https://r4ds.had.co.nz/)
+* [Geocomputation with R](https://rpubs.com/spring19cp6521/Syllabus)
+* [Urban Analytics - supporting materials](https://github.com/alexsingleton/urban_analytics)
+
+# Technology
+Cell phone use is prohibited at all times during class, except if you are using cell phones to answer quizzes/ surveys. Laptops, tablets, e-readers, and other digital devices may be used to take notes or refer to relevant information, take quizzes, and complete in-class assignments. If you are using a digital device for non-course purposes at any time during the semester, you will be asked to refrain from using it for the remainder of the course. No exceptions.
+
+There will be times in class when the instructor reserves the right to enact the “No Device Rule.” During these times, all digital devices will be required to be stored off desks so that students may concentrate on tasks or presentations. Expect that this rule will be used when your peers are presenting and during guest lectures.
+
+# Student-Faculty expectations
+At Georgia Tech, we believe that it is important to continually strive for an atmosphere of mutual respect, acknowledgement, and responsibility between faculty members and the student body. See http://www.catalog.gatech.edu/rules/22.php for an articulation of some basic expectations—that you can have of me, and that I have of you. Respect for knowledge, hard work, and cordial interactions will help build the environment we seek. Therefore, I encourage you to remain committed to the ideals of Georgia Tech while in this class.
+
+# Academic integrity
+Georgia Tech aims to cultivate a community based on trust, academic integrity, and honor. Students are expected to act according to the highest ethical standards. For more information on Georgia Tech’s Academic Honor Code, please visit http://www.catalog.gatech.edu/rules/18b.php and http://www.catalog.gatech.edu/genregulations/honorcode.php.
+
+# ADA accommodations
+If you are a student with learning needs that require special accommodation, contact the Office of Disability Services at (404)894-2563 or http://disabilityservices.gatech.edu/, as soon as possible, to make an appointment to discuss your special needs and to obtain an accommodations letter.  Please also e-mail me as soon as possible in order to set up a time to discuss your learning needs.
