@@ -152,7 +152,7 @@ reading_col <- c(
         # https://journalofbigdata.springeropen.com/articles/10.1186/s40537-021-00525-8
         # https://dl.acm.org/doi/pdf/10.1145/2001269.2001297
   "",# 13
-  "[1](https://scholarship.law.gwu.edu/cgi/viewcontent.cgi?article=1159&context=faculty_publications), [2](https://openyls.law.yale.edu/handle/20.500.13051/7808), [3](https://web.stanford.edu/dept/HPS/Design%20AI%20so%20that%20it%27s%20fair.pdf), [4](https://www.nature.com/articles/541458a)",# 14
+  "[1](https://scholarship.law.gwu.edu/cgi/viewcontent.cgi?article=1159&context=faculty_publications), [2](https://openyls.law.yale.edu/bitstream/handle/20.500.13051/7808/Hurley_Mikella.pdf), [3](https://hps.stanford.edu/sites/hps/files/media/file/design_ai_so_that_its_fair.pdf), [4](https://www.nature.com/articles/541458a)",# 14
   "",# 15
   ""# 16
 ) 
@@ -170,7 +170,7 @@ assignment_col <- c(
   "[Mini 3](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg) <br> (due <br> Oct 3)", # 6
   "[Mini 4](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg) <br> (due <br> Oct 10)",# 7
   "", # 8
-  "[Major 1](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg) <br> (due <br> Oct 30)",# 9 
+  "[Major 1](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg) <br> (due <br> Oct 31)",# 9 
   "",# 10
   "[Major 2](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg) <br> (due <br> Nov 14)",# 11
   "",# 12
@@ -246,10 +246,10 @@ Cell phone use is prohibited at all times during class, except if you are using 
 There will be times in class when the instructor reserves the right to enact the “No Device Rule.” During these times, all digital devices will be required to be stored off desks so that students may concentrate on tasks or presentations. Expect that this rule will be used when your peers are presenting and during guest lectures.
 
 # Student-Faculty expectations
-At Georgia Tech, we believe that it is important to continually strive for an atmosphere of mutual respect, acknowledgement, and responsibility between faculty members and the student body. See http://www.catalog.gatech.edu/rules/22.php for an articulation of some basic expectations—that you can have of me, and that I have of you. Respect for knowledge, hard work, and cordial interactions will help build the environment we seek. Therefore, I encourage you to remain committed to the ideals of Georgia Tech while in this class.
+At Georgia Tech, we believe that it is important to continually strive for an atmosphere of mutual respect, acknowledgement, and responsibility between faculty members and the student body. See https://catalog.gatech.edu/rules/21/ for an articulation of some basic expectations—that you can have of me, and that I have of you. Respect for knowledge, hard work, and cordial interactions will help build the environment we seek. Therefore, I encourage you to remain committed to the ideals of Georgia Tech while in this class.
 
 # Academic integrity
-Georgia Tech aims to cultivate a community based on trust, academic integrity, and honor. Students are expected to act according to the highest ethical standards. For more information on Georgia Tech’s Academic Honor Code, please visit http://www.catalog.gatech.edu/rules/18b.php and http://www.catalog.gatech.edu/genregulations/honorcode.php.
+Georgia Tech aims to cultivate a community based on trust, academic integrity, and honor. Students are expected to act according to the highest ethical standards. For more information on Georgia Tech’s Academic Honor Code, please visit https://catalog.gatech.edu/rules/17/ and https://policylibrary.gatech.edu/student-life/academic-honor-code.
 
 # ADA accommodations
 If you are a student with learning needs that require special accommodation, contact the Office of Disability Services at (404)894-2563 or http://disabilityservices.gatech.edu/, as soon as possible, to make an appointment to discuss your special needs and to obtain an accommodations letter.  Please also e-mail me as soon as possible in order to set up a time to discuss your learning needs.
