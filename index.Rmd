@@ -62,7 +62,7 @@ weeks <- tibble(
     rep("Module 4: <br> Urban image & computer vision", 2),
     rep("Module 5: <br> Social media", 2),
     rep("Module 6: <br> Data ethics", 1),
-    rep("Final Project Lab", 1),
+    rep("Group Project Lab", 1),
     rep("Student <br> Presentations", 1)
   ),
   Week = as.character(rep(1:total_week))
@@ -77,54 +77,54 @@ weeks$Week <- paste(weeks$Week, "<br><font size=2 color=gray>", day, "</font>")
 
 ```{r, echo=FALSE}
 topic_col <- c(
-  "Introduction: Class structure, format & expectations [(Slide)](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg), <br> 
-  Intro to R - #1 [(Slide)](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg)",# 1
+  "Introduction: Class structure, format & expectations [(Slide)](https://raw.githubusercontent.com/ujhwang/urban-analytics-2025/main/uc.jpg), <br> 
+  Intro to R - #1 [(Slide)](https://raw.githubusercontent.com/ujhwang/urban-analytics-2025/main/uc.jpg)",# 1
   
-  "Intro to R - #2 [(Slide)](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg) <br> 
-  Data for Urban Analytics [(Slide)](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg)",# 2
+  "Intro to R - #2 [(Slide)](https://raw.githubusercontent.com/ujhwang/urban-analytics-2025/main/uc.jpg) <br> 
+  Data for Urban Analytics [(Slide)](https://raw.githubusercontent.com/ujhwang/urban-analytics-2025/main/uc.jpg)",# 2
   
-  "Accessing Data via API [(Slide)](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg)",# 3
+  "Accessing Data via API [(Slide)](https://raw.githubusercontent.com/ujhwang/urban-analytics-2025/main/uc.jpg)",# 3
   
-  "Census & Yelp API ([RMD](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg), 
-  [HTML](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg)) <br> Data Wrangling [(Slide)](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg)",# 4
+  "Census & Yelp API ([RMD](https://raw.githubusercontent.com/ujhwang/urban-analytics-2025/main/uc.jpg), 
+  [HTML](https://raw.githubusercontent.com/ujhwang/urban-analytics-2025/main/uc.jpg)) <br> Data Wrangling [(Slide)](https://raw.githubusercontent.com/ujhwang/urban-analytics-2025/main/uc.jpg)",# 4
   
-  "Data Wrangling: Hands-on ([RMD](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg),
-  [HTML](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg)) <br> Deriving Insights from Your Data [(Slide)](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg)",# 5
+  "Data Wrangling: Hands-on ([RMD](https://raw.githubusercontent.com/ujhwang/urban-analytics-2025/main/uc.jpg),
+  [HTML](https://raw.githubusercontent.com/ujhwang/urban-analytics-2025/main/uc.jpg)) <br> Deriving Insights from Your Data [(Slide)](https://raw.githubusercontent.com/ujhwang/urban-analytics-2025/main/uc.jpg)",# 5
   
-  "Deriving Insights from Your Data: Hands-on ([RMD](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg),
-  [HTML](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg)) <br> Storytelling with Data [(Slide)](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg)",# 6
+  "Deriving Insights from Your Data: Hands-on ([RMD](https://raw.githubusercontent.com/ujhwang/urban-analytics-2025/main/uc.jpg),
+  [HTML](https://raw.githubusercontent.com/ujhwang/urban-analytics-2025/main/uc.jpg)) <br> Storytelling with Data [(Slide)](https://raw.githubusercontent.com/ujhwang/urban-analytics-2025/main/uc.jpg)",# 6
   
-  "Interactive Visualization 1 ([RMD](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg),
-  [HTML](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg))<br>
+  "Interactive Visualization 1 ([RMD](https://raw.githubusercontent.com/ujhwang/urban-analytics-2025/main/uc.jpg),
+  [HTML](https://raw.githubusercontent.com/ujhwang/urban-analytics-2025/main/uc.jpg))<br>
   Interactive Visualization 2 
-  ([RMD](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg),
-  [HTML](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg)) <br> <b> Student Presentation of Final Project Idea and Review of Literature/Examples (Oct 1) </b>",# 7
+  ([RMD](https://raw.githubusercontent.com/ujhwang/urban-analytics-2025/main/uc.jpg),
+  [HTML](https://raw.githubusercontent.com/ujhwang/urban-analytics-2025/main/uc.jpg)) <br> <b> Student Presentation of Group Project Idea and Review of Literature/Examples (Oct 1) </b>",# 7
   
   "Handling Transportation Data in R
-  ([Slide](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg))", # 8
+  ([Slide](https://raw.githubusercontent.com/ujhwang/urban-analytics-2025/main/uc.jpg))", # 8
   
-  "General Transit Feed Specification ([RMD](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg),
-  [HTML](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg)) <br> Open Street Map ([RMD](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg),
-  [HTML](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg))",# 9
+  "General Transit Feed Specification ([RMD](https://raw.githubusercontent.com/ujhwang/urban-analytics-2025/main/uc.jpg),
+  [HTML](https://raw.githubusercontent.com/ujhwang/urban-analytics-2025/main/uc.jpg)) <br> Open Street Map ([RMD](https://raw.githubusercontent.com/ujhwang/urban-analytics-2025/main/uc.jpg),
+  [HTML](https://raw.githubusercontent.com/ujhwang/urban-analytics-2025/main/uc.jpg))",# 9
   
-  "Urban Images & Computer Vision [(Slide)](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg)<br> Applications of Computer Vision in Urban Studies [(Slide)](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg)",# 10
+  "Urban Images & Computer Vision [(Slide)](https://raw.githubusercontent.com/ujhwang/urban-analytics-2025/main/uc.jpg)<br> Applications of Computer Vision in Urban Studies [(Slide)](https://raw.githubusercontent.com/ujhwang/urban-analytics-2025/main/uc.jpg)",# 10
   
-  "Sampling & Processing Images ([RMD](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg),
-  [HTML](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg)) <br>
-  Computer Vision ([Colab](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg), [RMD](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg), [HTML](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg))",# 11
+  "Sampling & Processing Images ([RMD](https://raw.githubusercontent.com/ujhwang/urban-analytics-2025/main/uc.jpg),
+  [HTML](https://raw.githubusercontent.com/ujhwang/urban-analytics-2025/main/uc.jpg)) <br>
+  Computer Vision ([Colab](https://raw.githubusercontent.com/ujhwang/urban-analytics-2025/main/uc.jpg), [RMD](https://raw.githubusercontent.com/ujhwang/urban-analytics-2025/main/uc.jpg), [HTML](https://raw.githubusercontent.com/ujhwang/urban-analytics-2025/main/uc.jpg))",# 11
   
-  "<b>Student Presentation of Final Project Data, Methods, & Preliminary Results (Nov 5)</b> <br> Social Media Analysis ([Slide](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg)) <br>",# 12
+  "<b>Student Presentation of Group Project Data, Methods, & Preliminary Results (Nov 5)</b> <br> Social Media Analysis ([Slide](https://raw.githubusercontent.com/ujhwang/urban-analytics-2025/main/uc.jpg)) <br>",# 12
   
-  "Getting & Processing Reddit Data in R ([RMD](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg),
-  [HTML](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg))<br> Sentiment Analysis ([RMD](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg),
-  [HTML](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg), [Colab](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg))
+  "Getting & Processing Reddit Data in R ([RMD](https://raw.githubusercontent.com/ujhwang/urban-analytics-2025/main/uc.jpg),
+  [HTML](https://raw.githubusercontent.com/ujhwang/urban-analytics-2025/main/uc.jpg))<br> Sentiment Analysis ([RMD](https://raw.githubusercontent.com/ujhwang/urban-analytics-2025/main/uc.jpg),
+  [HTML](https://raw.githubusercontent.com/ujhwang/urban-analytics-2025/main/uc.jpg), [Colab](https://raw.githubusercontent.com/ujhwang/urban-analytics-2025/main/uc.jpg))
   ",# 13
   
-  "Guest Lecture ([link](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg))<br> [(Slide)](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg)",# 14
+  "Guest Lecture ([link](https://raw.githubusercontent.com/ujhwang/urban-analytics-2025/main/uc.jpg))<br> [(Slide)](https://raw.githubusercontent.com/ujhwang/urban-analytics-2025/main/uc.jpg)",# 14
   
-  "Assistance with Final Project Related Issues",# 15
+  "Assistance with Group Project Related Issues",# 15
   
-  "<b> Student Presentation of Final Project (Dec 1)</b><br> Wrap Up"# 16
+  "<b> Student Presentation of Group Project (Dec 1)</b><br> Wrap Up"# 16
 )
 
 
@@ -165,16 +165,16 @@ assignment_col <- c(
   "",# 1
   "",# 2
   "",# 3
-  "[Mini 1](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg) <br> (due <br> Sep 19)",# 4
-  "[Mini 2](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg) <br> (due <br> Sep 26)",# 5
-  "[Mini 3](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg) <br> (due <br> Oct 3)", # 6
-  "[Mini 4](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg) <br> (due <br> Oct 10)",# 7
+  "[Mini 1](https://raw.githubusercontent.com/ujhwang/urban-analytics-2025/main/uc.jpg) <br> (due <br> Sep 19)",# 4
+  "[Mini 2](https://raw.githubusercontent.com/ujhwang/urban-analytics-2025/main/uc.jpg) <br> (due <br> Sep 26)",# 5
+  "[Mini 3](https://raw.githubusercontent.com/ujhwang/urban-analytics-2025/main/uc.jpg) <br> (due <br> Oct 3)", # 6
+  "[Mini 4](https://raw.githubusercontent.com/ujhwang/urban-analytics-2025/main/uc.jpg) <br> (due <br> Oct 10)",# 7
   "", # 8
-  "[Major 1](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg) <br> (due <br> Oct 31)",# 9 
+  "[Major 1](https://raw.githubusercontent.com/ujhwang/urban-analytics-2025/main/uc.jpg) <br> (due <br> Oct 31)",# 9 
   "",# 10
-  "[Major 2](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg) <br> (due <br> Nov 14)",# 11
+  "[Major 2](https://raw.githubusercontent.com/ujhwang/urban-analytics-2025/main/uc.jpg) <br> (due <br> Nov 14)",# 11
   "",# 12
-  "[Major 3](https://raw.githubusercontent.com/ujhwang/urban-analytics-2024/main/uc.jpg) <br> (due <br> Nov 28)",# 13
+  "[Major 3](https://raw.githubusercontent.com/ujhwang/urban-analytics-2025/main/uc.jpg) <br> (due <br> Nov 28)",# 13
   "",# 14
   "",# 15
   "<b> Project Report<br> (due <br> Dec 05) </b>"# 16
@@ -204,12 +204,12 @@ weeks %>%
 5. Of course, you can ask questions to us anytime, inside or outside classroom. I strongly encourage you to utilize our office hours as another learning opportunity.
 
 # Grading breakdown
-There are three major assignments, four mini assignments, and one final team project. Project presentation is based on PowerPoint slides (or other presentation tool of your choice.) Project report should be an HTML document rendered from R Markdown (or other tool of your choice).
+There are three major assignments, four mini assignments, and one group project. Project presentation is based on PowerPoint slides (or other presentation tool of your choice.) Project report should be an HTML document rendered from R Markdown (or other tool of your choice).
 
 
 ```{r echo=F}
-data.frame('Assignment Type' = c("Final Project Presentation", 
-                                 "Final Project Report",
+data.frame('Assignment Type' = c("Group Project Presentation", 
+                                 "Group Project Report",
                                  'Major Assignment', 
                                  'Mini Assignment', 
                                  "Participation"),
