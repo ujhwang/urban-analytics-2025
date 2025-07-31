@@ -22,7 +22,7 @@ library(kableExtra)
 ```
 
 
-# General Information
+# General information
 
 * **Classroom**: Room 358 in Arch-West | MW 5:00-6:15PM
 * **Office hours (online)**: Thursday 4:30-6:30PM ([link](https://urban-analytics-2025.youcanbook.me/))
@@ -36,7 +36,7 @@ There are no prerequisites to this course, but the followings are encouraged:
 * Basic understanding of geographic information systems (GIS) and applied statistics  
 * Working knowledge of any programming language, preferably the R (or Python)
 
-# Course Goals and Learning Outcomes 
+# Course goals and learning outcomes 
 After successfully completing this course, students will: 
 
 * List sources of data from urban areas and why each of them would be used
@@ -201,7 +201,7 @@ weeks %>%
 2. Read assigned book chapters/materials, review their examples and snippets, replicate their results, and repeat until you understand.
 3. Work with peers. Form a group early in the semester, and have their sharp eyes on your code. Still, you need to submit your HW individually.
 4. If you have a trouble with your code outside of class (and get frustrated), Google it. It will not only be faster and more efficient than contacting us, but trouble-shooting on your own is essential skill, particularly after you graduate. Luckily, most of the problems you may encounter in this class have been already encountered by others. You can search how they solved them in Stack Overflow.
-5. Of course, you can ask questions to us anytime, inside or outside classroom. I strongly encourage you to utilize our office hours as another learning opportunity.
+5. Of course, you can ask questions to me anytime, inside or outside classroom. I strongly encourage you to utilize the office hour as another learning opportunity.
 
 # Grading breakdown
 There are three major assignments, four mini assignments, and one group project. Project presentation is based on PowerPoint slides (or other presentation tool of your choice.) Project report should be an HTML document rendered from R Markdown (or other tool of your choice).
@@ -245,7 +245,7 @@ Cell phone use is prohibited at all times during class, except if you are using 
 
 There will be times in class when the instructor reserves the right to enact the “No Device Rule.” During these times, all digital devices will be required to be stored off desks so that students may concentrate on tasks or presentations. Expect that this rule will be used when your peers are presenting and during guest lectures.
 
-# Student-Faculty expectations
+# Student-faculty expectations
 At Georgia Tech, we believe that it is important to continually strive for an atmosphere of mutual respect, acknowledgement, and responsibility between faculty members and the student body. See https://catalog.gatech.edu/rules/21/ for an articulation of some basic expectations—that you can have of me, and that I have of you. Respect for knowledge, hard work, and cordial interactions will help build the environment we seek. Therefore, I encourage you to remain committed to the ideals of Georgia Tech while in this class.
 
 # Academic integrity
