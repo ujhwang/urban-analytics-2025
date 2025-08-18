@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Intro to Intro to Urban Analytics</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Uijeong “UJ” Hwang" />
+    <meta name="date" content="2025-08-18" />
+    <script src="libs/header-attrs-2.28/header-attrs.js"></script>
+    <link href="libs/remark-css-0.0.1/default.css" rel="stylesheet" />
+    <script src="libs/kePrint-0.0.1/kePrint.js"></script>
+    <link href="libs/lightable-0.0.1/lightable.css" rel="stylesheet" />
+    <link rel="stylesheet" href="css/nhsr.css" type="text/css" />
+    <link rel="stylesheet" href="css/nhsr-fonts.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+
+
+
+
+
+class: title-slide, left, bottom
+
+# Intro to Intro to Urban Analytics
+----
+### Uijeong "UJ" Hwang
+### August 18, 2025
+
+---
+class: inverse, middle, center
+
+## This is one of two required courses to complete 
+###(other than the Capstone)
+# the Master of Science in Urban Analytics degree
+
+---
+# I am
+
+.left-column[
+
+# ![](https://ujhwang.github.io/images/IDphoto_Hwang.jpg)
+]
+.right-column[
+* &lt;b&gt;Uijeong "UJ" Hwang&lt;/b&gt;
+* A data analyst in the Transportation Planning Department at the Atlanta Regional Commission.
+* Interested in understanding travel behavior and choices, particularly the factors that encourage walking, biking, and public transit use.
+* PhD in City and Regional Planning and MS in Urban Analytics.
+]
+
+
+---
+#Get-to-Know-You Survey
+&lt;div style='position: relative; padding-bottom: 56.25%; padding-top: 35px; height: 0; overflow: hidden;'&gt;&lt;iframe sandbox='allow-scripts allow-same-origin allow-presentation' allowfullscreen='true' allowtransparency='true' frameborder='0' height='315' src='https://www.mentimeter.com/app/presentation/alsd15a6faj9rr7p1i5km4n7qvw68xyi/embed' style='position: absolute; top: 0; left: 0; width: 100%; height: 100%;' width='420'&gt;&lt;/iframe&gt;&lt;/div&gt;
+
+---
+
+# What is Urban Analytics?
+
+[Urban analytics defined](https://journals.sagepub.com/doi/full/10.1177/2399808319839494)
+
+--
+
+* Application of &lt;b&gt;Big data&lt;/b&gt; and &lt;b&gt;data science tools&lt;/b&gt; to understand, monitor, and control urban functions and processes
+
+--
+
+* Michael Goodchild defines it as a 'new kind of urban research, one that exploits the vast new sources that are becoming available from &lt;b&gt;social media, crowd sourcing, and sensor networks&lt;/b&gt;...'
+
+--
+
+* 'Urban analytics is fast emerging as the core set of tools employed to deal with problems of &lt;b&gt;big data, urban simulation, and geodemographics&lt;/b&gt;' -- Michael Batty
+
+--
+
+* Analytics is the &lt;b&gt;discovery, interpretation, and communication of meaningful patterns in data&lt;/b&gt;' --Wikipedia
+
+
+---
+#The Plan for the Course
+
+* This course consists of six modules (excluding the prep module)
+
+&lt;table style="font-size: 22px; width: 90%; margin: auto;"&gt;
+  &lt;tr&gt;
+    &lt;th style="text-align: left;"&gt;Module&lt;/th&gt;
+    &lt;th style="text-align: left;"&gt;Topic&lt;/th&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td&gt;Module 0:&lt;br&gt;Preparation&lt;/td&gt;
+    &lt;td&gt;
+      &lt;ul&gt;
+        &lt;li&gt;Environment setup: RStudio, Docker, packages...&lt;/li&gt;
+        &lt;li&gt;Intro to R&lt;/li&gt;
+      &lt;/ul&gt;
+    &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td&gt;Module 1:&lt;br&gt;POI &amp; Census&lt;/td&gt;
+    &lt;td&gt;
+      &lt;ul&gt;
+        &lt;li&gt;Using APIs to collect data&lt;/li&gt;
+        &lt;li&gt;Data wrangling and tidying&lt;/li&gt;
+      &lt;/ul&gt;
+    &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td&gt;Module 2:&lt;br&gt;Graphic communication &amp; &lt;br&gt;storytelling&lt;/td&gt;
+    &lt;td&gt;
+      &lt;ul&gt;
+        &lt;li&gt;Interactive visualization&lt;/li&gt;
+        &lt;li&gt;Telling stories with data / analysis&lt;/li&gt;
+      &lt;/ul&gt;
+    &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/table&gt;
+
+---
+#The Plan for the Course
+
+* This course consists of six modules (excluding the prep module)
+
+&lt;table style="font-size: 22px; width: 90%; margin: auto;"&gt;
+  &lt;tr&gt;
+    &lt;th style="text-align: left;"&gt;Module&lt;/th&gt;
+    &lt;th style="text-align: left;"&gt;Topic&lt;/th&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td&gt;Module 3:&lt;br&gt;Transportation&lt;/td&gt;
+    &lt;td&gt;
+      &lt;ul&gt;
+        &lt;li&gt;Using General Transit Feed Specification (GTFS)&lt;/li&gt;
+        &lt;li&gt;Network analysis with OpenStreetMap&lt;/li&gt;
+      &lt;/ul&gt;
+    &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td&gt;Module 4:&lt;br&gt;Urban image &amp; &lt;br&gt;computer vision&lt;/td&gt;
+    &lt;td&gt;
+      &lt;ul&gt;
+        &lt;li&gt;Sampling and processing street view images&lt;/li&gt;
+        &lt;li&gt;Using Computer Vision to extract information from images&lt;/li&gt;
+      &lt;/ul&gt;
+    &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td&gt;Module 5:&lt;br&gt;Social media&lt;/td&gt;
+    &lt;td&gt;
+      &lt;ul&gt;
+        &lt;li&gt;Collecting and processing text data from Reddit&lt;/li&gt;
+        &lt;li&gt;Sentiment analysis&lt;/li&gt;
+      &lt;/ul&gt;
+    &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td&gt;Module 6:&lt;br&gt;Data ethics&lt;/td&gt;
+    &lt;td&gt;
+      &lt;ul&gt;
+        &lt;li&gt;Data ethics and privacy&lt;/li&gt;
+      &lt;/ul&gt;
+    &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/table&gt;
+
+---
+# Deliverables and Grading Breakdown
+* Only four out of the five mini assignments will be counted towards the final grade. 
+* The team project presentation is based on PowerPoint slides (or other presentation tool of your choice.) 
+* The team project report should be a web document rendered from R Markdown (or other tool of your choice).
+
+&lt;table class="table table-condensed table-responsive" style="margin-left: auto; margin-right: auto;"&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:left;"&gt; Assignment.Type &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; Percent &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Mini Assignments (4 out of 5) &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; 20% (5% each x 4) &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Major Assignments (3 out of 3) &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; 45% (15% each x 3) &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Team Project Presentation &amp;amp; Report &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; 30% (15% each) &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Participation &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; 5% &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+---
+#Course Logistics
+
+###Platform
+* RStudio (almost entirely)
+* A Docker image will be shared
+
+### Each module consists of
+* One or two lecture sessions
+* Two lab sessions
+
+### For each lab sessions, you will be given
+* One incomplete R Markdown script
+* One HTML document generated from the complete R Markdown script
+
+---
+#Course Logistics
+
+###Office hour
+* Thursday 4:30-6:30pm by appointment
+* Online (Google Meet)
+* You can find the link in the syllabus
+
+###Communication
+* Canvas
+* Email: uhwang3@gatech.edu; uhwang@atlantaregional.org
+
+### Readings
+* Available via links in the syllabus
+
+---
+# Course Logistics
+
+### Assignments
+* Render R Markdown script into a web document and publish it to RPubs
+* Submit the URL to the web document
+
+### Class presentations 
+* Three student presentations (by groups) for final project milestones
+* How do you want to form the groups?
+
+## Any questions?
+
+
+---
+# Previous Group Projects
+
+### Fall 2023
+* [Tracking Urban Rails-to-trails Discourse on Reddit](https://mohsinyousufi.github.io/cp8883report/)
+* [How Do Flood Events Affect Street Networks &amp; Outdoor Activity?](https://rpubs.com/ppatty666/uaprojectfinalv3)
+* [Predictive Modeling of the Perception of Liveliness in Atlanta Using Place Pulse and Google Street View Data](https://rpubs.com/runner157/1124596)
+
+### Fall 2024
+* [Spatiotemporal Analysis of Imbalanced Parking Demand and Supply](https://thanawit.com/projects/ImbalancedParkingAnalysis/)
+* [Analyzing the Impact of Commercial Freight Vehicles on Traffic Safety in Metro Atlanta](https://rpubs.com/jake_mcghee/1250849)
+* [How Well Are Cities In Georgia Equipped To Prepare For And Withstand Hurricanes?](https://rpubs.com/klosada/1254375)
+* [LEED Certification: The Paradox of Sustainability?](https://rpubs.com/changminseok88/1254221)
+
+---
+#Example of MSUA Capstone: Covid-19 &amp; eating habit
+&lt;a href="https://ujhwang.github.io/covid-19-eating-habit"&gt;&lt;img src="img/covid-19-eating-habit_merge.gif"&gt;&lt;/a&gt;
+
+
+
+
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "googlecode",
+"highlightLines": true,
+"highlightLanguage": "r",
+"countIncrementalSlides": false,
+"ratio": "16:9"
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+// add `data-at-shortcutkeys` attribute to <body> to resolve conflicts with JAWS
+// screen reader (see PR #262)
+(function(d) {
+  let res = {};
+  d.querySelectorAll('.remark-help-content table tr').forEach(tr => {
+    const t = tr.querySelector('td:nth-child(2)').innerText;
+    tr.querySelectorAll('td:first-child .key').forEach(key => {
+      const k = key.innerText;
+      if (/^[a-z]$/.test(k)) res[k] = t;  // must be a single letter (key)
+    });
+  });
+  d.body.setAttribute('data-at-shortcutkeys', JSON.stringify(res));
+})(document);
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+<!--Hat-tip: https://www.garrickadenbuie.com/blog/xaringan-tip-logo-all-slides/-->
+<style>
+.logo {
+  background-image: url(img/CSPAVnewlogo.png);
+  background-size: contain;
+  background-repeat: no-repeat;
+  position: absolute;
+  top: 1em;
+  right: 1em;
+  width: 220px;
+  height: 256px;
+  z-index: 0;
+}
+</style>
+
+<script>
+document
+  .querySelectorAll(
+    '.remark-slide-content' +
+    ':not(.title-slide)' +
+    // add additional classes to exclude here, e.g.
+    ':not(.inverse)' +
+    ':not(.hide-logo)'
+  )
+  .forEach(el => {
+    el.innerHTML += '<div class="logo"></div>';
+  });
+</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
