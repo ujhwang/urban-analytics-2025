@@ -1,0 +1,6 @@
+installed.packages()
+installed.packages()$Packages
+getwd()
+ls()
+pi()
+pi
