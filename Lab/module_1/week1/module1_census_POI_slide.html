@@ -207,7 +207,7 @@ View(vars)
 ]
 
 ---
-## How to set up system environment variable: in Windows
+## How to set up system environment variable in Windows:
 .pull-left[
 1. Press Windows key and search 'edit the system environment variables'.  
   (Or, go to Control panel - System - Advanced system settings - 'Advanced' tab)
@@ -220,30 +220,42 @@ View(vars)
 ]
 
 ---
-## How to set up system environment variable: in MacOS
-.small[
+## How to set up system environment variable in MacOS (with some caveats):
+.pull-left[
+Option 1
+.footnotesize[
 1. Open the terminal
 2. Find your default shell with `echo $SHELL`
-3. Open one of the following files in text editor:
-  - if the path in 2 was `/bin/zsh`, `nano ~/.zshrc`
-  - if the path in 2 was `/bin/bash`, `nano ~/.bash_profile`
-4. Add `export [variable_name]="[variable_value]"`
-  - e.g., `export CENSUS_API="your_census_api_key"`
-5. Save and close (`Ctrl+ O` -&gt; Enter -&gt; `Ctrl + X`)
-6. Restart RStudio and confirm with:
-  - `Sys.getenv('CENSUS_API')`
+3. Open one of the following files:
+  - If `/bin/zsh`, `nano ~/.zshrc`
+  - If `/bin/bash`, `nano ~/.bash_profile`
+4. Add `export [name]="[value]"`  
+***`export CENSUS_API="value"`***
+5. Save and close (`^+O` -&gt; Enter -&gt; `^+X`)
+]
+**These variables don't work on GUIs (such as RStudio)**
+]
+.pull-right[
+Option 2
+.footnotesize[
+1. Open the terminal
+2. `launchctl setenv [name] "[value]"`  
+***`launchctl setenv CENSUS_API "value"`***
+]
+**These variables work on both terminal apps (such as vscode) and GUIs (such as RStudio), but only persist until reboot**
 ]
 
+
 ---
-## How to set up system environment variable: R-specific method
+## How to set up R-specific environment variable in MacOS (recommended):
 .small[
 1. Open the terminal
 2. Open (or create) your `~/.Renviron` file in a text editor:
   - `nano ~/.Renviron`
 3. Add your environment variables to the file
-  - [variable_name]=[variable_value]
-  - e.g., `CENSUS_API=your_census_api_key`
-4. Save and close (`Ctrl + O` -&gt; Enter -&gt; `Ctrl + X`)
+  - [variable_name]=[variable_value]  
+  ***`CENSUS_API=your_census_api_key`***
+4. Save and close (`^+O` -&gt; Enter -&gt; `^+X`)
 5. Restart RStudio and confirm with:
   - `Sys.getenv('CENSUS_API')`
 ]
