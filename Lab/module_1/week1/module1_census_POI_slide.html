@@ -117,7 +117,7 @@ census &lt;- get_acs(geography = "county",
 
 ---
 ## NHGIS data finder
-![](img/nhgis.JPG)&lt;!-- --&gt;
+![](img/nhgis.jpg)&lt;!-- --&gt;
 
 ---
 ## Searching for Variables
@@ -241,16 +241,58 @@ View(vars)
 ---
 ## Let's get API keys
 
-1. Get Census API key ([link](https://api.census.gov/data/key_signup.html)).
-2. Get Google API key ([instructions](https://ujhwang.github.io/urban-analytics-2025/Lab/module_1/week1/setting_up_google_api_key.pdf)).
-3. Add the two API keys in your system environment variable list.
+1. Get Census API key ([link](https://api.census.gov/data/key_signup.html))
+2. Get Google API key ([instructions](https://ujhwang.github.io/urban-analytics-2025/Lab/module_1/week1/setting_up_google_api_key.pdf))
+3. Add the two API keys in your system environment variable list
 
 * Test if the environment variables are working in your R Studio session by running:
   * `Sys.getenv("your_sys_env_var_name")`
-* If you see both keys fine, you are good to go.
+* If you see both keys fine, you are good to go
 
 
+---
+## Test your Google API key
 
+Run the following code to confirm that your Google API key is working
+
+.footnotesize[
+
+```r
+library(httr)
+library(jsonlite)
+
+google_api_key &lt;- Sys.getenv("google_api")
+lat &lt;- 33.777435
+lng &lt;- -84.397472
+radius &lt;- 500
+
+url &lt;- paste0("https://places.googleapis.com/v1/places:searchNearby")
+
+body &lt;- list(
+  includedTypes = list("restaurant", "cafe"),
+  maxResultCount = 20,
+  locationRestriction = list(
+    circle = list(
+      center = list(latitude = lat, longitude = lng),
+      radius = radius
+    )
+  )
+)
+
+res &lt;- POST(
+  url,
+  add_headers(
+    "Content-Type" = "application/json",
+    "X-Goog-Api-Key" = google_api_key,
+    "X-Goog-FieldMask" = "places.displayName,places.formattedAddress,places.types"),
+  body = body,
+  encode = "json"
+)
+
+content &lt;- content(res, "text")
+data &lt;- fromJSON(content)
+```
+]
 
 
 
