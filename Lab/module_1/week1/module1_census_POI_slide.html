@@ -5,7 +5,7 @@
     <meta charset="utf-8" />
     <meta name="author" content="Uijeong Hwang" />
     <meta name="date" content="2023-09-03" />
-    <script src="libs/header-attrs-2.28/header-attrs.js"></script>
+    <script src="libs/header-attrs-2.29/header-attrs.js"></script>
     <link href="libs/remark-css-0.0.1/default.css" rel="stylesheet" />
     <link rel="stylesheet" href="assets/sydney-fonts.css" type="text/css" />
     <link rel="stylesheet" href="assets/sydney.css" type="text/css" />
@@ -44,6 +44,10 @@ Uijeong "UJ" Hwang
 * Census API &amp; tidycensus
 * Google Places API
 * How to use API keys securely
+
+### Today's goals
+* Get Census and Google API keys
+* Register the keys as environment variables
 
 ---
 ## What is API?
@@ -102,7 +106,7 @@ A mechanism for two computing interfaces (often a client and a server) to talk t
 ---
 ## Tidycensus syntax
 
-```r
+``` r
 library(tidycensus)
 
 census_api_key('load your api key here')
@@ -123,7 +127,7 @@ census &lt;- get_acs(geography = "county",
 ## Searching for Variables
 
 
-```r
+``` r
 vars &lt;- load_variables(2022, "acs5")
 View(vars)
 ```
@@ -194,7 +198,9 @@ View(vars)
 ---
 ## How to set up system environment variable: using Docker
 .pull-left[
-* Create a new container and add the API keys as environment variables.
+1. Create a new container and add the API keys as environment variables.
+2. Launch an RStudio using the container and confirm with:
+  - `Sys.getenv('CENSUS_API')`
 ]
 .pull-right[
 ![](img/env_var_docker.png)
@@ -202,12 +208,16 @@ View(vars)
 
 ---
 ## How to set up system environment variable: in Windows
-.small[
-* Press Windows key and search 'edit the system environment variables'.  
+.pull-left[
+1. Press Windows key and search 'edit the system environment variables'.  
   (Or, go to Control panel - System - Advanced system settings - 'Advanced' tab)
-* Click 'Environment Variables' and add the environment variables.
+2. Click 'Environment Variables' and add the environment variables.
+3. Restart RStudio and confirm with:
+  - `Sys.getenv('CENSUS_API')`
 ]
+.pull-right[
 ![](img/env_var_windows.png)
+]
 
 ---
 ## How to set up system environment variable: in MacOS
@@ -218,10 +228,10 @@ View(vars)
   - if the path in 2 was `/bin/zsh`, `nano ~/.zshrc`
   - if the path in 2 was `/bin/bash`, `nano ~/.bash_profile`
 4. Add `export [variable_name]="[variable_value]"`
-  - e.g., `export census_api="your_census_api_key_value"`
+  - e.g., `export CENSUS_API="your_census_api_key"`
 5. Save and close (`Ctrl+ O` -&gt; Enter -&gt; `Ctrl + X`)
-5. Restart RStudio and confirm with:
-  - `Sys.getenv('census_api')`
+6. Restart RStudio and confirm with:
+  - `Sys.getenv('CENSUS_API')`
 ]
 
 ---
@@ -232,10 +242,10 @@ View(vars)
   - `nano ~/.Renviron`
 3. Add your environment variables to the file
   - [variable_name]=[variable_value]
-  - e.g., `census_api=your_census_api_key`
+  - e.g., `CENSUS_API=your_census_api_key`
 4. Save and close (`Ctrl + O` -&gt; Enter -&gt; `Ctrl + X`)
 5. Restart RStudio and confirm with:
-  - `Sys.getenv('census_api')`
+  - `Sys.getenv('CENSUS_API')`
 ]
 
 ---
@@ -246,7 +256,7 @@ View(vars)
 3. Add the two API keys in your system environment variable list
 
 * Test if the environment variables are working in your R Studio session by running:
-  * `Sys.getenv("your_sys_env_var_name")`
+  * `Sys.getenv("CENSUS_API")`
 * If you see both keys fine, you are good to go
 
 
@@ -257,11 +267,11 @@ Run the following code to confirm that your Google API key is working
 
 .footnotesize[
 
-```r
+``` r
 library(httr)
 library(jsonlite)
 
-google_api_key &lt;- Sys.getenv("google_api")
+google_api_key &lt;- Sys.getenv("GOOGLE_API")
 lat &lt;- 33.777435
 lng &lt;- -84.397472
 radius &lt;- 500
