@@ -38,7 +38,10 @@ For example, the following request sends a query to the Open-Meteo public API to
 > `https://api.open-meteo.com/v1/forecast?latitude=33.774766&longitude=-84.397389&hourly=temperature_2m&forecast_days=1`
 
 If you copy and paste this link into your browser, you will see something like this:
-![](img/open_meteo_api.png)
+
+```{r echo=F, out.width='100%'}
+knitr::include_graphics("https://ujhwang.github.io/urban-analytics-2025/Lab/module_1/week1/img/open_meteo_api.png")
+```
 
 > Try adding `temperature_unit=fahrenheit` and see how the result changes.
 
@@ -59,11 +62,12 @@ We will use the Nearby Search. Let's look at the required parameters of [Nearby 
   * `location`: latitude and longitude (e.g., 33.774766, -84.397389)
   * `radius`: (0-50,000 meters; default is 0)
 
-* `FieldMask` specifies what information you want to get from the places in the search area.
+* `FieldMask` specifies what information you want to get from the places in the search area ([place data fields](https://developers.google.com/maps/documentation/places/web-service/data-fields)).
 
-![](img/field_mask_1.png)
-
-![](img/field_mask_2.png)
+```{r echo=F, out.width='100%'}
+knitr::include_graphics("https://ujhwang.github.io/urban-analytics-2025/Lab/module_1/week1/img/field_mask_1.png")
+knitr::include_graphics("https://ujhwang.github.io/urban-analytics-2025/Lab/module_1/week1/img/field_mask_2.png")
+```
 
 * Each field in the FieldMask has a different cost, which is represented by a SKU (Stock Keeping Unit). A SKU is just a unique ID for a specific product or service. **Make sure to check the [free monthly quota](https://developers.google.com/maps/billing-and-pricing/pricing) for each SKU and keep an eye on your usage in the Google Developers Console**.
 
@@ -90,7 +94,9 @@ tidycensus::census_api_key(Sys.getenv(????))
 ## Getting Census BG Boundary
 To use `get_acs()`, we first should understand what arguments are needed. Try `?tidycensus::get_acs` in your console to check the documentation for this function.
 
-![](img/get_acs.png)
+```{r echo=F, out.width='100%'}
+knitr::include_graphics("https://ujhwang.github.io/urban-analytics-2025/Lab/module_1/week1/img/get_acs.png")
+```
 
 We will specify the following argument and leave the rest as default: geography, state, county, variables, year, survey, geometry, and output.
 Notice that we can also specify **variables** argument. You can provide variable ID to specify the variables you want to download. You can (1) use **load_variables()** function to see all variable ID, (2) go to Census Bureau [website](https://data.census.gov/cedsci/) to see the variable ID, or (3) some other sources, such as [NHGIS](https://www.nhgis.org/).
