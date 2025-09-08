@@ -143,17 +143,17 @@ tm_shape(bg_decatur) + tm_borders(lwd = 2) +
 
 # Preparing location parameters for the Nearby Search
 
-The plan is to:
-  
-1. Pick one Census BG.
-2. Create a bounding box (bbox) and get its centroid using `st_centroid()`. This will be `latitude` and `longitude` information for the Nearby Search.
-3. Calculate a `radius` X such that a circle with the radius X centered at the `latitude` and `longitude` would completely cover the Census BG polygon.
-4. Send an API request for this circle and process the response.
-5. Use a loop to repeat 1 ~ 4 for all Census BGs to obtain all POIs in the City of Decatur.
-
 ## Using Census BGs
 
-For Steps 2 and 3, We define a function that calculates the `longitude`, `latitude`, and `radius` value. To ensure that we draw a circle that encapsulates a given polygon, we need to figure out the distance between the centroid (which will be the center of the circle) and the furthest point of the polygon. By definition, bounding box of a polygon A is drawn such that all points that make A is inside the bounding box. If we can draw a bounding box around each polygon and calculate the distance from the centroid to one of the corners of the bounding box, that will be the radius of the circle.
+We are going to use the Census BG data to obtain the information needed for the `locationRestriction` parameter in the Nearby Search. Specifically, we will:
+  
+1. Select a Census BG.
+2. Create a bounding box (bbox) and get its centroid using `st_centroid()`. This will be `latitude` and `longitude` information for the Nearby Search.
+3. Calculate a `radius` $r$ such that a circle with radius $r$ centered at the `latitude` and `longitude` completely covers the Census BG polygon.
+4. Send an API request using this circle and process the response.
+5. Repeat steps 1 ~ 4 for all Census BGs to obtain all POIs in the City of Decatur.
+
+For the steps 2 and 3, We define a function that calculates the `longitude`, `latitude`, and `radius` value. To ensure that we draw a circle that encapsulates a given polygon, we need to figure out the distance between the centroid (which will be the center of the circle) and the furthest point of the polygon. By definition, bounding box of a polygon A is drawn such that all points that make A is inside the bounding box. If we can draw a bounding box around each polygon and calculate the distance from the centroid to one of the corners of the bounding box, that will be the radius of the circle.
 
 ```{r}
 # Function: Get XY coordinates and radius
