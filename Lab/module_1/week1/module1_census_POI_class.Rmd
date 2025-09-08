@@ -85,7 +85,7 @@ The Census bureau provides API. There is a convenient R package that makes acces
 ## Census API Key
 First of all, we need to obtain a Census API Key. Go to [https://api.census.gov/data/key_signup.html](https://api.census.gov/data/key_signup.html) and request a key. It will be sent to your email account. To use the `tidycensus` package, you must authenticate with your key using: `census_api_key("your-API-key-here")`.
 
-> **Remember that everything on Rpubs is public. If you include your API key in R Markdown, it will be public as well. This is DANGEROUS. Instead, you can store the key as your environment variable and call it using *Sys.getenv()* function. For example, my Census API Key is stored in Environment Variables as "CENSUS_API". I can use the following code to authenticate without revealing my actual API key.**
+> **Remember that everything on Rpubs is public. If you include your API key in R Markdown, it will be public as well. This is DANGEROUS. Instead, you can store the key as your environment variable and call it using *Sys.getenv()* function.**
 
 ```{r}
 tidycensus::census_api_key(Sys.getenv(????))
