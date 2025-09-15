@@ -339,7 +339,7 @@ toy_df %>% ????
 Now let’s apply what we’ve learned to the Google Places dataset we collected last week. We’ll start by importing the data and doing a quick check to identify potential issues.
 
 ```{r}
-poi <- read_rds("https://raw.githubusercontent.com/ujhwang/urban-analytics-2025/main/Lab/module_1/week2/google_poi_data.rds")
+poi <- read_rds(????)
 
 # Preview the POI data
 poi %>% 
