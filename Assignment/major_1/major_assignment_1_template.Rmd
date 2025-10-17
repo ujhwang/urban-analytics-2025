@@ -1,0 +1,375 @@
+---
+title: "Major_assignment_1_template"
+author: 'Uijeong "UJ" Hwang'
+date: '2025-10-16'
+output: html_document
+---
+
+
+
+# How to use this template
+
+You will see # TASK ///// through out this template. This indicates the beginning of a task. Right below it will be instructions for the task.
+Each # TASK ///// will be paired with # //TASK ///// to indicate where that specific task ends.
+
+For example, if you see something like below...
+```{r example}
+# TASK ////////////////////////////////////////////////////////////////////////
+# create a vector with element 1,2,3 and assign it to `my_vec` object
+# **YOUR CODE HERE..**
+# //TASK //////////////////////////////////////////////////////////////////////
+```
+
+What I expect you to do is to replace where it says `# **YOUR CODE HERE..**` with your answer, like below.
+```{r}
+# TASK ////////////////////////////////////////////////////////////////////////
+# create a vector with element 1,2,3 and assign it to `my_vec` object
+my_vec <- c(1,2,3)
+# //TASK //////////////////////////////////////////////////////////////////////
+```
+
+Some instructions may involve multiple steps, as shown below. You can use the pipe operator to chain multiple functions together to complete the task. Make sure to **assign the output of your code to an object with the specified name**. This ensures that your code runs smoothly—if you change the object name (e.g., subset_car in the example below), the subsequent code will not run correctly.
+
+```{r}
+# TASK ////////////////////////////////////////////////////////////////////////
+# 1. Using mtcars object, extract rows where cyl equals 4
+# 2. Select mpg and disp columns
+# 3. Create a new column 'summation' by adding mpg and disp
+# 4. assign it into `subset_car` object
+subset_car <- # **YOUR CODE HERE..**
+# //TASK //////////////////////////////////////////////////////////////////////
+```
+
+I expect you to replace where it says `# **YOUR CODE HERE..**` with your answer, like below.
+```{r}
+# TASK ////////////////////////////////////////////////////////////////////////
+# 1. Using mtcars object, extract rows where cyl equals 4
+# 2. Select mpg and disp columns
+# 3. Create a new column 'summation' by adding mpg and disp
+# 4. assign it into `subset_car` object
+subset_car <- mtcars %>% 
+  filter(cyl == 4) %>% 
+  select(mpg, disp) %>% 
+  mutate(summation = mpg + disp)
+# //TASK //////////////////////////////////////////////////////////////////////
+```
+
+> You will need to knit it, publish it on Rpubs, and submit the link.
+
+# Task description
+
+## Park-and-Ride Simulation
+
+In this assignment, you will simulate a journey that begins at a Census Tract centroid, drives to the nearest MARTA station, and then take the MARTA to the Midtown station. You will then compare how travel time varies by different Census Tracts. The steps and data required for this analysis are outlined below.
+
+Step 1. Download the required GTFS data. Convert it to sf format, extract MARTA rail stations, and clean the stop names to remove duplicates. Also, extract the destination station.
+
+Step 2. Download the required Census data. Convert Census Tract polygons into centroids and create a subset for analysis.
+
+Step 3. Download the required OSM data. Convert it into an sfnetwork object and clean the network.
+
+Step 4. Simulate a park-and-ride trip (from a test origin → closest station → Midtown station).
+
+Step 5. Turn the simulation process from Step 4 into a reusable function.
+
+Step 6. Apply the function from Step 5 iteratively to all home locations.
+
+Step 7.Finally, create maps and plots to analyze whether there are any disparities in transit accessibility when commuting to Midtown.
+
+
+# Step 0. Packages
+
+Importing the necessary packages is part of this assignment. Add any required packages to the code chunk below as you progress through the tasks.
+```{r}
+library(" **YOUR CODE HERE..** ")
+```
+
+# Step 1. GTFS data
+
+```{r}
+# TASK ////////////////////////////////////////////////////////////////////////
+# Download MARTA GTFS data and assign it to `gtfs` object
+gtfs <- # **YOUR CODE HERE..**
+# //TASK //////////////////////////////////////////////////////////////////////
+
+
+
+# =========== NO MODIFICATION ZONE STARTS HERE ===============================
+# Edit stop_name to append serial numbers (1, 2, etc.) to remove duplicate names
+stop_dist <- stop_group_distances(gtfs$stops, by='stop_name') %>%
+  filter(dist_max > 200)
+
+gtfs$stops <- gtfs$stops %>% 
+  group_by(stop_name) %>% 
+  mutate(stop_name = case_when(stop_name %in% stop_dist$stop_name ~ paste0(stop_name, " (", seq(1,n()), ")"),
+                               TRUE ~ stop_name))
+
+# Create a transfer table
+gtfs <- gtfsrouter::gtfs_transfer_table(gtfs, 
+                                        d_limit = 200, 
+                                        min_transfer_time = 120)
+
+# NOTE: Converting to sf format uses stop_lat and stop_lon columns contained in gtfs$stops.
+#       In the conversion process, stop_lat and stop_lon are converted into a geometry column, and
+#       the output sf object do not have the lat lon column anymore.
+#       But many other functions in tidytransit look for stop_lat and stop_lon.
+#       So I re-create them using mutate().
+gtfs <- gtfs %>% gtfs_as_sf(crs = 4326)
+
+gtfs$stops <- gtfs$stops %>% 
+  ungroup() %>% 
+  mutate(stop_lat = st_coordinates(.)[,2],
+         stop_lon = st_coordinates(.)[,1]) 
+
+# Get stop_id for rails and buses
+rail_stops <- gtfs$routes %>% 
+  filter(route_type %in% c(1)) %>% 
+  inner_join(gtfs$trips, by = "route_id") %>% 
+  inner_join(gtfs$stop_times, by = "trip_id") %>% 
+  inner_join(gtfs$stops, by = "stop_id") %>% 
+  group_by(stop_id) %>% 
+  slice(1) %>% 
+  pull(stop_id)
+
+# Extract MARTA rail stations
+station <- gtfs$stops %>% filter(stop_id %in% rail_stops)
+
+# Extract Midtown Station
+midtown <- gtfs$stops %>% filter(stop_id == "134")
+
+# Create a bounding box to which we limit our analysis
+bbox <- st_bbox(c(xmin = -84.45241, ymin = 33.72109, xmax = -84.35009, ymax = 33.80101), 
+                 crs = st_crs(4326)) %>% 
+  st_as_sfc()
+
+# =========== NO MODIFY ZONE ENDS HERE ========================================
+
+```
+
+# Step 2. Census data
+
+```{r}
+# TASK ////////////////////////////////////////////////////////////////////////
+# Specify Census API key whichever you prefer using census_api_key() function
+census_api_key(" **YOUR CODE HERE..** ")
+# //TASK //////////////////////////////////////////////////////////////////////
+
+
+
+# TASK ////////////////////////////////////////////////////////////////////////
+# Using get_acs() function, download Census Tract level data for 2022 for Fulton, DeKalb, and Clayton in GA.
+# and assign it to `census` object.
+# Make sure you set geometry = TRUE.
+
+# Required data from the Census ACS:
+#  1) Median Household Income (name the column `hhinc`)
+#  2) Minority Population (%) (name the column `pct_minority`)
+# Note: You may need to download two or more Census ACS variables to calculate minority population (%). "Minority" here can refer to either racial minorities or racial+ethnic minorities -- it's your choice.
+
+census <- # **YOUR CODE HERE..**
+
+# //TASK //////////////////////////////////////////////////////////////////////
+
+
+# TASK ////////////////////////////////////////////////////////////////////////
+# Convert the CRS of `census` to GCS
+
+census <- census %>% 
+  # **YOUR CODE HERE..**
+# //TASK //////////////////////////////////////////////////////////////////////
+
+
+# TASK ////////////////////////////////////////////////////////////////////////
+# get centroids of `census` polygons, 
+# extract centroids that fall inside the `bbox`, 
+# and assign it to `home` object.
+
+home <- # **YOUR CODE HERE..**
+
+# //TASK //////////////////////////////////////////////////////////////////////
+
+```
+
+
+# Step 3. OSM data
+
+```{r}
+# TASK ////////////////////////////////////////////////////////////////////////
+# 1. Get OSM road data for all road types for the `bbox` area.
+# 3. Convert the OSM data into an sf object
+# 4. Convert osmdata polygons into lines
+
+osm_road <- # **YOUR CODE HERE..**
+# //TASK //////////////////////////////////////////////////////////////////////
+
+
+# TASK ////////////////////////////////////////////////////////////////////////
+# 1. Convert osm_road$osm_line into sfnetwork
+# 2. Activate edges
+# 3. Clean the network using the methods we learned
+# 4. Assign the cleaned network to an object named 'osm'
+
+osm <- osm_road$osm_line %>% 
+  # **YOUR CODE HERE..**
+  # ...
+# //TASK //////////////////////////////////////////////////////////////////////
+
+
+# TASK ////////////////////////////////////////////////////////////////////////
+# Add a new column named 'length' to the edges part of the object `osm`.
+osm <- osm %>% 
+  # **YOUR CODE HERE..**
+  # ...
+# //TASK //////////////////////////////////////////////////////////////////////
+```
+
+# Step 4. Simulate a park-and-ride trip
+
+```{r}
+
+# =========== NO MODIFICATION ZONE STARTS HERE ===============================
+# Extract the first row from `home` object and store it `home_1`
+home_1 <- home[1,]
+# =========== NO MODIFY ZONE ENDS HERE ========================================
+
+
+# TASK ////////////////////////////////////////////////////////////////////////
+# Find the shortest paths from `home_1` to all other stations
+paths <- # **YOUR CODE HERE..**
+# //TASK //////////////////////////////////////////////////////////////////////
+
+  
+# =========== NO MODIFICATION ZONE STARTS HERE ===============================
+# Get shortest network distances from `home_1` to all other stations.
+dist_all <- map_dbl(1:nrow(paths), function(x){
+  osm %>%
+    activate("nodes") %>% 
+    slice(paths$node_paths[[x]]) %>% 
+    st_as_sf("edges") %>% 
+    pull(length) %>% 
+    sum()
+}) %>% unlist()
+
+# Replace zeros with a large value.
+if (any(dist_all == 0)){
+  dist_all[dist_all == 0] <- max(dist_all)
+}
+
+# TASK ////////////////////////////////////////////////////////////////////////
+# Find the closest station and assign the value to `closest_station`
+
+closest_station <- # **YOUR CODE HERE..**
+# //TASK //////////////////////////////////////////////////////////////////////
+
+
+# TASK ////////////////////////////////////////////////////////////////////////
+# Get the distance to the closest station.
+
+closest_dist <- # **YOUR CODE HERE..**
+# //TASK //////////////////////////////////////////////////////////////////////
+
+
+# TASK ////////////////////////////////////////////////////////////////////////
+# Calculate travel time based on the `closest_dist` assuming we drive at 20 miles/hour speed.
+# Assign the value to `trvt_osm_m` object.
+
+trvt_osm_m <- # **YOUR CODE HERE..**
+# //TASK //////////////////////////////////////////////////////////////////////
+
+
+# TASK ////////////////////////////////////////////////////////////////////////
+# Create a subset of stop_times data table for date = 2025-11-10, 
+# minimum departure time of 7AM, maximum departure time of 10AM.
+# Assign the output to `am_stop_time` object
+am_stop_time <- # **YOUR CODE HERE..**
+# //TASK //////////////////////////////////////////////////////////////////////
+
+
+# TASK ////////////////////////////////////////////////////////////////////////
+# 1. Calculate travel times from the `closest_station` to all other stations 
+#    during time specified in `am_stop_time`. Allow ONE transfer.
+# 2. Filter the row where the destination is Midtown station. 
+# 3. Assign it to `trvt` object.
+trvt <-  # **YOUR CODE HERE..**
+# //TASK //////////////////////////////////////////////////////////////////////
+
+
+# =========== NO MODIFICATION ZONE STARTS HERE ===============================
+# Divide the calculated travel time by 60 to convert the unit from seconds to minutes.
+trvt_gtfs_m <- trvt$travel_time/60
+
+# Add the travel time from home to the nearest station and
+# the travel time from the nearest station to Midtown station
+total_trvt <- trvt_osm_m + trvt_gtfs_m
+# =========== NO MODIFY ZONE ENDS HERE ========================================
+```
+
+
+# Step 5. Convert Step 4 into a function
+
+```{r}
+# Function definition (do not modify other parts of the code in this code chunk except for those inside the TASK section)
+
+get_trvt <- function(home, osm, station, midtown){
+  
+  # TASK ////////////////////////////////////////
+  # If the code in Step 4 runs fine,
+  # Replace where it says **YOUR CODE HERE..** below with 
+  # the ENTIRETY of the previous code chunk (i.e., Step 4)
+  
+  # **YOUR CODE HERE..**
+  
+  # //TASK //////////////////////////////////////
+
+  # =========== NO MODIFICATION ZONE STARTS HERE ===============================
+  if (length(total_trvt) == 0) {total_trvt = 0}
+
+  return(total_trvt)
+  # =========== NO MODIFY ZONE ENDS HERE ========================================
+}
+```
+
+
+# Step 6. Apply the function to all home locations.
+
+```{r}
+# Prepare an empty vector
+total_trvt <- vector("numeric", nrow(home))
+
+# Apply the function to all Census Tracts
+# Fill `total_trvt` object with the calculated time
+for (i in 1:nrow(home)){
+  total_trvt[i] <- get_trvt(home[i,], osm, station, midtown)
+}
+
+# cbind the calculated travel time to `home`
+home <- home %>% 
+  cbind(trvt = total_trvt)
+```
+
+
+# Step 7. Create maps and plots
+
+Create two maps and two plots by following the instructions in the code chunk below. **Write a brief (maximum 200 words) description summarizing your observations from the maps and plots**
+
+```{r}
+# TASK ////////////////////////////////////////
+# Create an interactive map displaying `census` (polygons) and `home` (points), effectively visualizing household income and travel time to Midtown Station, respectively.
+
+# **YOUR CODE HERE..**
+
+# Create an interactive map displaying `census` (polygons) and `home` (points) effectively visualizing the percentage of minority population and travel time to Midtown Station, respectively.
+
+# **YOUR CODE HERE..**
+
+# Create a scatter plot with a trend line showing the relationship between household income (x-axis) and travel time to Midtown Station (y-axis).
+
+# **YOUR CODE HERE..**
+
+# Create a scatter plot with a trend line showing the relationship between the percentage of minority population (x-axis) and travel time to Midtown Station (y-axis).
+
+# **YOUR CODE HERE..**
+
+# //TASK //////////////////////////////////////
+```
+
