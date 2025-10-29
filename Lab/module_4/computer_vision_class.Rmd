@@ -1,0 +1,125 @@
+---
+title: "Computer Vision"
+author: 'Uijeong "UJ" Hwang'
+date: '2025-10-29'
+output:
+  rmdformats::downcute:
+    downcute_theme: "chaos"
+---
+
+<style type="text/css">
+  body{
+  font-family: Arial;
+  }
+</style>
+
+```{r, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(magrittr)
+library(sf)
+library(tmap)
+library(here)
+ttm()
+```
+
+We are going to do quick analyses using the semantic segmentation model results.
+
+## Merge the data processed from Colab back to R 
+
+If you are having trouble running the Colab script, you may use these files: [geojson](https://ujhwang.github.io/urban-analytics-2025/Lab/module_4/edges_azi_atlanta.geojson) and [csv](https://ujhwang.github.io/urban-analytics-2025/Lab/module_4/seg_output.csv).
+
+```{r}
+# Load the sampled points.
+edges_azi <- st_read(????) # path to your "edges_azi_{city_name}.geojson" file
+
+# Download the output from the computer vision models.
+seg_output <- read.csv(????) # path to your "seg_output.csv" file
+
+# Join them back to the `edges_azi` object that was used to download images.
+edges_seg_output <- edges_azi %>% 
+  inner_join(seg_output, by=c("node_id"="img_id"))
+```
+
+The numeric values in each object column represent the number of **pixels** in images predicted as that object. Check out the first few rows and see which objects comprise the majority of streetscapes.
+
+```{r}
+head(edges_seg_output)
+```
+
+
+## Calculate percentages of ***building***, ***sky***, ***road***, and ***sidewalk***.
+
+
+```{r}
+edges_seg_output %<>% 
+  mutate(pct_building = building/(768*768),
+         pct_sky = sky/(768*768),
+         pct_road = road/(768*768),
+         pct_sidewalk = sidewalk/(768*768))
+```
+
+> Wait -- What's that 768 about? Where did that number come from?
+
+## Calculate Greenness
+
+Greenness can be represented by ***vegetation*** (vertical vegetation) and ***terrain*** (horizontal vegetation) categories. 
+```{r}
+edges_seg_output %<>%
+  mutate(pct_greenness = ????)
+
+# Map
+tm_basemap("OpenStreetMap") +
+  tm_shape(edges_seg_output) +
+  tm_dots(size = 0.7,
+          fill = "pct_greenness", 
+          fill.scale = tm_scale(values = c("darkgray", "yellow", "green", "darkgreen")))
+```
+
+## Calculate Building-to-street Ratio
+
+The ***building*** category literally represents building-related objects, whereas the major 'street' objects include ***road***, ***sidewalk***, and ***car***
+
+```{r}
+edges_seg_output %<>% 
+  mutate(b2s_ratio = ????) %>% 
+  mutate(b2s_ratio = case_when(
+    b2s_ratio >= 1 ~ 1, # Set the upper limit as 1.
+    TRUE ~ b2s_ratio))
+
+tm_basemap("OpenStreetMap") +
+  tm_shape(edges_seg_output) +
+  tm_dots(size = 0.7,
+          fill = "b2s_ratio", 
+          fill.scale = tm_scale(values = c("#EED8AE", "#C4A484", "#8B5A2B", "brown")))
+```
+
+## Violin plots comparing the segmentation results by type of road
+
+Are there significant differences between road types? 
+
+```{r warning=F}
+edges_seg_output %<>%
+  filter(!is.na(highway)) %>% 
+  mutate(highway = factor(highway, levels = c('residential','tertiary','secondary',
+                                              'primary','trunk','motorway')))
+edges_seg_output %>% 
+  pivot_longer(cols = c(b2s_ratio, pct_greenness, pct_building, 
+                        pct_sky, pct_road, pct_sidewalk), 
+               names_to = 'variable', 
+               values_to = "value") %>% 
+  ggplot(mapping = aes(x = ????, y = ????)) +
+  geom_????(fill = "#c7ffd6") +
+  stat_summary(fun=mean, geom="point", size=1.2, color="red")+
+  coord_flip() +
+  theme_bw() +
+  facet_wrap(~variable, scales = "free_x", nrow = 2)
+```
+
+
+
+
+
+
+
+
+
