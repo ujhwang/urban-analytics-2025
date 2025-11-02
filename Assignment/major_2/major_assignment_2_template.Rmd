@@ -1,0 +1,422 @@
+---
+title: "Major Assignment 2 - Template"
+author: 'Uijeong "UJ" Hwang'
+date: '2025-11-02'
+output:
+  rmdformats::downcute:
+    downcute_theme: "chaos"
+---
+
+```{=html}
+<style type="text/css">
+  body{
+  font-family: Arial;
+  }
+</style>
+```
+# How to use this template
+
+You will see \# TASK ///// through out this template. This indicates the beginning of a task. Right below it will be instructions for the task. Each \# TASK ///// will be paired with \# //TASK ///// to indicate where that specific task ends.
+
+For example, if you see something like below...
+
+```{r example}
+# TASK ////////////////////////////////////////////////////////////////////////
+# create a vector with element 1,2,3 and assign it to `my_vec` object
+# **YOUR CODE HERE..**
+# //TASK //////////////////////////////////////////////////////////////////////
+```
+
+What I expect you to do is to replace where it says `# **YOUR CODE HERE..**` with your answer, like below.
+
+```{r}
+# TASK ////////////////////////////////////////////////////////////////////////
+# create a vector with element 1,2,3 and assign it to `my_vec` object
+my_vec <- c(1,2,3)
+# //TASK //////////////////////////////////////////////////////////////////////
+```
+
+Some instructions may involve multiple steps, as shown below. You can use the pipe operator to chain multiple functions together to complete the task. Make sure to **assign the output of your code to an object with the specified name**. This ensures that your code runs smoothly---if you change the object name (e.g., subset_car in the example below), the subsequent code will not run correctly.
+
+```{r}
+# TASK ////////////////////////////////////////////////////////////////////////
+# 1. Using mtcars object, extract rows where cyl equals 4
+# 2. Select mpg and disp columns
+# 3. Create a new column 'summation' by adding mpg and disp
+# 4. assign it into `subset_car` object
+subset_car <- # **YOUR CODE HERE..**
+# //TASK //////////////////////////////////////////////////////////////////////
+```
+
+I expect you to replace where it says `# **YOUR CODE HERE..**` with your answer, like below.
+
+```{r}
+# TASK ////////////////////////////////////////////////////////////////////////
+# 1. Using mtcars object, extract rows where cyl equals 4
+# 2. Select mpg and disp columns
+# 3. Create a new column 'summation' by adding mpg and disp
+# 4. assign it into `subset_car` object
+subset_car <- mtcars %>% 
+  filter(cyl == 4) %>% 
+  select(mpg, disp) %>% 
+  mutate(summation = mpg + disp)
+# //TASK //////////////////////////////////////////////////////////////////////
+```
+
+> You will need to knit it, publish it on Rpubs, and submit the link.
+
+# Task Description
+
+## Exploring Walkability Through Street View and Computer Vision
+
+This assignment is divided into three main sections.
+
+**In the first section**, you will select two Census Tracts within Fulton and DeKalb Counties, GA --- one that you believe is the most walkable and another that is the least walkable. You may choose any tracts within these two counties. If the area you want to analyze is not well represented by a single tract, you may select multiple adjacent tracts (e.g., two contiguous tracts as one "walkable area"). The definition of *walkable* is up to you --- it can be based on your personal experience (e.g., places where you've had particularly good or bad walking experiences), Walk Score data, or any combination of criteria. After making your selections, ***provide a brief explanation of why you chose those tracts***.
+
+**The second section** is the core of this assignment. You will prepare OpenStreetMap (OSM) data, download Google Street View (GSV) images, and apply the computer vision technique covered in class --- semantic segmentation.
+
+**In the third section**, you will summarize and analyze the results. After applying computer vision to the images, you will obtain pixel counts for 19 different object categories. Using the data, you will:
+
+-   Create maps to visualize the spatial distribution of these objects,
+-   Draw boxplots to compare their distributions between the walkable and unwalkable tracts, and
+-   Perform t-tests to examine the differences in mean values and their statistical significance.
+
+## Section 0. Packages
+
+Importing the necessary packages is part of this assignment. Add any required packages to the code chunk below as you progress through the tasks.
+
+```{r}
+library(" **YOUR CODE HERE..** ")
+```
+
+# Section 1. Choose your Census Tracts.
+
+Use the Census Tract map in the following code chunk to identify the GEOIDs of the tracts you consider *walkable* and *unwalkable*.
+
+```{r}
+# TASK ////////////////////////////////////////////////////////////////////////
+# Set up your api key here
+census_api_key(
+  # **YOUR CODE HERE..**
+)
+# //TASK //////////////////////////////////////////////////////////////////////
+
+# =========== NO MODIFICATION ZONE STARTS HERE ===============================
+# Download Census Tract polygon for Fulton and DeKalb
+tract <- get_acs("tract", 
+                 variables = c('pop' = 'B01001_001'),
+                 year = 2023,
+                 state = "GA", 
+                 county = c("Fulton", "DeKalb"), 
+                 geometry = TRUE)
+
+tm_mode("view")
+tm_basemap("OpenStreetMap") +
+  tm_shape(tract) + 
+  tm_polygons(fill_alpha = 0.2)
+# =========== NO MODIFY ZONE ENDS HERE ========================================
+```
+
+
+Once you have the GEOIDs, create two Census Tract objects -- one representing your most walkable area and the other your least walkable area.
+
+```{r}
+# TASK ////////////////////////////////////////////////////////////////////////
+# 1. Specify the GEOIDs of your walkable and unwalkable Census Tracts. 
+#    e.g., tr_id_walkable <- c("13121001205", "13121001206")
+# 2. Extract the selected Census Tracts using `tr_id_walkable` and `tr_id_unwalkable`
+
+# For the walkable Census Tract(s)
+tr_id_walkable <- # **YOUR CODE HERE..**
+
+tract_walkable <- tract %>% 
+  # **YOUR CODE HERE..**
+
+# For the unwalkable Census Tract(s)
+tr_id_unwalkable <- # **YOUR CODE HERE..**
+
+tract_unwalkable <- tract %>% 
+  # **YOUR CODE HERE..**
+
+# //TASK //////////////////////////////////////////////////////////////////////
+
+
+# TASK ////////////////////////////////////////////////////////////////////////
+# Create an interactive map showing `tract_walkable` and `tract_unwalkable`
+
+# //TASK //////////////////////////////////////////////////////////////////////
+```
+
+**Provide a brief description of your selected Census Tracts. Why do you consider these tracts walkable or unwalkable? What factors do you think contribute to their walkability?**
+
+
+# Section 2. OSM, GSV, and Computer Vision.
+
+## Step 1. Get and clean OSM data.
+
+To obtain the OSM network for your selected Census Tracts:
+(1) Create bounding boxes.
+(2) Use the bounding boxes to download OSM data.
+(3) Convert the data into an `sfnetwork` object and clean it.
+
+```{r}
+# TASK ////////////////////////////////////////////////////////////////////////
+# Create one bounding box (`tract_walkable_bb`) for your walkable Census Tract(s) and another (`tract_unwalkable_bb`) for your unwalkable Census Tract(s).
+
+# For the walkable Census Tract(s)
+tract_walkable_bb <- # **YOUR CODE HERE..**
+
+# For the unwalkable Census Tract(s)  
+tract_unwalkable_bb <- # **YOUR CODE HERE..**
+
+# //TASK //////////////////////////////////////////////////////////////////////
+
+
+# =========== NO MODIFICATION ZONE STARTS HERE ===============================
+# Get OSM data for the two bounding boxes
+osm_walkable <- opq(bbox = tract_walkable_bb) %>%
+  add_osm_feature(key = 'highway', 
+                  value = c("primary", "secondary", "tertiary", "residential")) %>%
+  osmdata_sf() %>% 
+  osm_poly2line()
+
+osm_unwalkable <- opq(bbox = tract_unwalkable_bb) %>%
+  add_osm_feature(key = 'highway', 
+                  value = c("primary", "secondary", "tertiary", "residential")) %>%
+  osmdata_sf() %>% 
+  osm_poly2line()
+# =========== NO MODIFY ZONE ENDS HERE ========================================
+
+
+# TASK ////////////////////////////////////////////////////////////////////////
+# 1. Convert `osm_walkable` and `osm_unwalkable` into sfnetwork objects (as undirected networks),
+# 2. Clean the network by (1) deleting parallel lines and loops, (2) creating missing nodes, and (3) removing pseudo nodes (make sure the `summarise_attributes` argument is set to 'first' when doing so).
+
+net_walkable <- osm_walkable$osm_lines %>% 
+  # Drop redundant columns 
+  select(osm_id, highway) %>% 
+  # **YOUR CODE HERE..**
+
+net_unwalkable <- osm_unwalkable$osm_lines %>% 
+  # Drop redundant columns 
+  select(osm_id, highway) %>% 
+  # **YOUR CODE HERE..**
+  
+# //TASK //////////////////////////////////////////////////////////////////////
+  
+  
+# TASK //////////////////////////////////////////////////////////////////////
+# Using `net_walkable` and`net_unwalkable`,
+# 1. Activate the edge component of each network.
+# 2. Create a `length` column.
+# 3. Filter out short (<300 feet) segments.
+# 4. Randomly Sample 100 rows per road type.
+# 5. Assign the results to `edges_walkable` and `edges_unwalkable`, respectively.
+
+# OSM for the walkable part
+edges_walkable <- net_walkable %>% 
+  # **YOUR CODE HERE..**
+
+# OSM for the unwalkable part
+edges_unwalkable <- net_unwalkable %>% 
+  # **YOUR CODE HERE..**
+
+# //TASK //////////////////////////////////////////////////////////////////////
+  
+# =========== NO MODIFICATION ZONE STARTS HERE ===============================
+# Merge the two
+edges <- bind_rows(edges_walkable %>% mutate(is_walkable = TRUE), 
+                   edges_unwalkable %>% mutate(is_walkable = FALSE)) %>% 
+  mutate(edge_id = seq(1,nrow(.)))
+# =========== NO MODIFY ZONE ENDS HERE ========================================
+```
+
+## Step 2. Define `getAzimuth()` function.
+
+In this assignment, you will collect ***two GSV images per road segment***, as illustrated in the figure below. To do this, you will define a function that extracts **the coordinates of the midpoint and the azimuths in both directions**.
+
+![](https://raw.githubusercontent.com/ujhwang/urban-analytics-2025/main/Assignment/major_2/sampling_method.png)
+
+> If you can't see this image, try changing the markdown editing mode from 'Source' to 'Visual' (you can find the buttons in the top-left corner of this source pane).
+
+
+```{r}
+getAzimuth <- function(line){
+
+  # TASK ////////////////////////////////////////////////////////////////////////
+  # 1. Use the `st_line_sample()` function to sample three points at locations 0.48, 0.5, and 0.52 along the line. These points will be used to calculate the azimuth.
+  # 2. Use `st_cast()` function to convert the 'MULTIPOINT' object into a 'POINT' object.
+  # 3. Extract coordinates using `st_coordinates()`.
+  # 4. Assign the coordinates of the midpoint to `mid_p`.
+  # 5. Calculate the azimuths from the midpoint in both directions and save them as `mid_azi_1` and `mid_azi_2`, respectively.
+  
+  # 1-3
+  mid_p3 <- line %>% 
+    # **YOUR CODE HERE..**
+  
+  # 4
+  mid_p <- # **YOUR CODE HERE..**
+  
+  # 5
+  mid_azi_1 <- # **YOUR CODE HERE..**
+  
+  mid_azi_2 <- # **YOUR CODE HERE..**
+  
+  # //TASK //////////////////////////////////////////////////////////////////////
+ 
+  
+  # =========== NO MODIFICATION ZONE STARTS HERE ===============================
+  return(tribble(
+    ~type,    ~X,            ~Y,             ~azi,
+    "mid1",    mid_p["X"],   mid_p["Y"],      mid_azi_1,
+    "mid2",    mid_p["X"],   mid_p["Y"],      mid_azi_2,
+  # =========== NO MODIFY ZONE ENDS HERE ========================================
+
+}
+```
+
+## Step 3. Apply the function to all street segments
+
+Apply the `getAzimuth()` function to the `edges` object. Once this step is complete, your data will be ready for downloading GSV images.
+
+```{r}
+# TASK ////////////////////////////////////////////////////////////////////////
+# Apply getAzimuth() function to all edges.
+# Remember that you need to pass edges object to st_geometry() before you apply getAzimuth()
+edges_azi <- edges %>% 
+  # **YOUR CODE HERE..**
+
+# //TASK //////////////////////////////////////////////////////////////////////
+
+# =========== NO MODIFICATION ZONE STARTS HERE ===============================
+edges_azi <- edges_azi %>% 
+  bind_cols(edges %>% 
+              st_drop_geometry() %>% 
+              slice(rep(1:nrow(edges),each=2))) %>% 
+  st_as_sf(coords = c("X", "Y"), crs = 4326, remove=FALSE) %>% 
+  mutate(img_id = seq(1, nrow(.)))
+# =========== NO MODIFY ZONE ENDS HERE ========================================
+```
+
+## Step 4. Define a function that formats request URL and download images.
+
+```{r}
+getImage <- function(iterrow){
+  # This function takes one row of `edges_azi` and downloads GSV image using the information from the row.
+  
+  # TASK ////////////////////////////////////////////////////////////////////////
+  # 1. Extract required information from the row of `edges_azi`
+  # 2. Format the full URL and store it in `request`. Refer to this page: https://developers.google.com/maps/documentation/streetview/request-streetview
+  # 3. Format the full path (including the file name) of the image being downloaded and store it in `fpath`
+  type <- # **YOUR CODE HERE..**
+  location <- # **YOUR CODE HERE..**
+  heading <- # **YOUR CODE HERE..**
+  edge_id <- # **YOUR CODE HERE..**
+  img_id <- # **YOUR CODE HERE..**
+  key <- # **YOUR CODE HERE..**
+  
+  endpoint <- # **YOUR CODE HERE..**
+  
+  request <- # **YOUR CODE HERE..**
+  fname <- glue::glue("GSV-nid_{img_id}-eid_{edge_id}-type_{type}-Location_{location}-heading_{heading}.jpg") # Don't change this code for fname
+  fpath <- # **YOUR CODE HERE..**
+  # //TASK //////////////////////////////////////////////////////////////////////
+
+  
+  
+  # =========== NO MODIFICATION ZONE STARTS HERE ===============================
+  # Download images
+  if (!file.exists(fpath)){
+    download.file(furl, fpath, mode = 'wb') 
+  }
+  # =========== NO MODIFY ZONE ENDS HERE ========================================
+}
+```
+
+## Step 5. Download GSV images
+
+<font color='red'> Before you download GSV images, make sure the row number in `edges_azi` is not too large! Each row corresponds to one GSV image, so if the row count exceeds your API quota, consider selecting different Census Tracts.</font>
+
+> You do **not** want to run the following code chunk more than **once**, so the code chunk option `eval=FALSE` is set to prevent the API call from executing again when knitting the script.
+
+```{r, eval=FALSE}
+# =========== NO MODIFICATION ZONE STARTS HERE ===============================
+for (i in seq(1,nrow(edges_azi))){
+  getImage(edges_azi[i,])
+}
+# =========== NO MODIFY ZONE ENDS HERE ========================================
+```
+
+> ZIP THE DOWNLOADED IMAGES AND NAME IT 'gsv_images.zip' FOR STEP 6.
+
+## Step 6. Apply computer vision
+
+Use this [Google Colab script](https://colab.research.google.com/drive/1U49q5Vht5KP_C4J2bQ7EzHHkYxiRuIy9?usp=sharing) to apply the pretrained semantic segmentation model to your GSV images.
+
+## Step 7. Merging the processed data back to R
+
+Once all of the images are processed and saved in your Colab session as a CSV file, download the CSV file and merge it back to `edges_azi`.
+
+```{r}
+# TASK ////////////////////////////////////////////////////////////////////////
+# Read the downloaded CSV file containing the semantic segmentation results.
+seg_output <- # **YOUR CODE HERE..**
+
+# //TASK ////////////////////////////////////////////////////////////////////////
+
+# TASK ////////////////////////////////////////////////////////////////////////  
+# 1. Join the `seg_output` data to `edges_azi`.
+# 2. Calculate the proportion of predicted pixels for the following categories: `building`, `sky`, `road`, and `sidewalk`. If there are other categories you are interested in, feel free to include their proportions as well.
+# 3. Calculate the proportion of greenness using the `vegetation` and `terrain` categories.
+# 4. Calculate the building-to-street ratio. For the street, use `road` and `sidewalk` pixels; including `car` pixels is optional.
+
+edges_seg_output <- edges_azi %>% 
+  # **YOUR CODE HERE..**
+  
+# //TASK ////////////////////////////////////////////////////////////////////////
+```
+
+# Section 3. Summarize and analyze the results.
+
+At the beginning of this assignment, you specified *walkable* and *unwalkable* Census Tracts. The key focus of this section is the comparison between these two types of tracts.
+
+## Analysis 1 - Visualize Spatial Distribution
+
+Create interactive maps showing the proportion of **sidewalk**, **greenness**, and the **building-to-street ratio** for both walkable and unwalkable areas. In total, you will produce 6 maps. <font color=pink> Provide a brief description of your findings. </font>
+
+```{r}
+# TASK ////////////////////////////////////////////////////////////////////////
+# Plot interactive map(s)
+# As long as you can deliver the message clearly, you can use any format/package you want.
+
+
+# //TASK //////////////////////////////////////////////////////////////////////
+
+```
+
+## Analysis 2 - Boxplot
+
+Create boxplots for the proportion of each category (**building**, **sky**, **road**, **sidewalk**, **greenness**, and any additional categories of interest) and the **building-to-street ratio** for walkable and unwalkable tracts. Each plot should compare walkable and unwalkable tracts. In total, you will produce 6 or more boxplots. <font color=pink> Provide a brief description of your findings. </font>
+
+```{r}
+# TASK ////////////////////////////////////////////////////////////////////////
+# Create boxplot(s) using ggplot2 package.
+
+
+# //TASK //////////////////////////////////////////////////////////////////////
+
+```
+
+## Analysis 3 - Mean Comparison (t-test)
+
+Perform t-tests on the mean proportion of each category (**building**, **sky**, **road**, **sidewalk**, **greenness**, and any additional categories of interest) as well as the **building-to-street ratio** between street segments in the walkable and unwalkable tracts. This will result in 6 or more t-test results. <font color=pink> Provide a brief description of your findings. </font>
+
+```{r}
+# TASK ////////////////////////////////////////////////////////////////////////
+# Perform t-tests and report both the differences in means and their statistical significance.
+# As long as you can deliver the message clearly, you can use any format/package you want.
+
+
+
+# //TASK //////////////////////////////////////////////////////////////////////
+```
