@@ -1,0 +1,494 @@
+---
+title: "Reddit Data Analysis"
+author: 'Uijeong "UJ" Hwang'
+date: '2025-11-10'
+output:
+  rmdformats::downcute:
+    downcute_theme: "chaos"
+---
+
+<style type="text/css">
+  body{
+  font-family: Arial;
+  }
+</style>
+
+
+```{r message=FALSE, warning=FALSE}
+# Package names
+packages <- c("RedditExtractoR", "anytime", "magrittr", "httr", "tidytext", "tidyverse", "igraph", "ggraph", "wordcloud2", "textdata", "here")
+
+# Install packages not yet installed
+installed_packages <- packages %in% rownames(installed.packages())
+if (any(installed_packages == FALSE)) {
+install.packages(packages[!installed_packages])
+}
+
+# Load packages
+invisible(lapply(packages, library, character.only = TRUE))
+
+```
+
+**DISCLAIMER**: Due to the uncensored nature of online communities, some Reddit posts may contain images or language that are not suitable for work or school. You may also encounter controversial content. This is part of studying urban analytics, as online platforms often reflect real social dynamics. That said, please keep an open mind, and I hope no one feels offended or uncomfortable with what we might come across.
+
+# 1. Collecting Reddit Data
+
+## 1-1. Downloading Reddit threads
+
+You will use the `RedditExtractoR` package to collect Reddit data. The function `RedditExtractoR::find_thread_urls()` lets you search for Reddit threads by **subreddit name, keyword, or a combination of both**. This function takes four arguments:
+
+-   `keywords`
+-   `subreddit` (optional)
+-   `sort_by`: "top" (default), "relevance", "comments", "new", "hot", "rising"
+    -   If searching *by keywords*: use "relevance", "comments", "new", "hot", "top"
+    -   If searching *by subreddit only*: use "hot", "new", "top", "rising"
+-   `period`: "month" (default), "hour", "day", "week", "year", "all"
+
+Although the package description does not explicitly state this, it appears that the `find_thread_urls()` function returns maximum 250 threads.
+
+Let's first search for threads using a keyword. **Choose your own keyword** -- in the example below, I will use *bike lane*. After running the search, take a look at what the output object looks like.
+
+```{r}
+# using keyword
+threads_1 <- find_thread_urls(keywords = ????, 
+                              sort_by = 'relevance', 
+                              period = 'all') %>% 
+  drop_na()
+
+rownames(threads_1) <- NULL
+
+# Sanitize text
+threads_1 %<>% 
+  mutate(across(
+    where(is.character),
+    ~ .x %>%
+        str_replace_all("\\|", "/") %>%   # replace vertical bars
+        str_replace_all("\\n", " ") %>%   # replace newlines
+        str_squish()                      # clean up extra spaces
+  ))
+
+colnames(threads_1)
+head(threads_1, 3) %>% knitr::kable()
+```
+
+Next, let's try searching *by subreddit* instead. To do this, you will need to find a subreddit name you are interested in. You can use `find_subreddits()` to get a list of subreddits related to your keyword of interest.
+
+```{r}
+# search for subreddits
+subreddit_list <- RedditExtractoR::find_subreddits(????)
+subreddit_list %>% 
+  arrange(desc(subscribers)) %>% 
+  .[1:25,c('subreddit','title','subscribers')] %>% 
+  knitr::kable()
+```
+
+Alternatively, you can check how many threads were found for that keyword within each subreddit.
+
+```{r}
+threads_1$subreddit %>% table() %>% sort(decreasing = T) %>% head(20)
+```
+
+After selecting a subreddit, let's search threads within that subreddit -- in the example below, I will use *bicycling*.
+
+```{r}
+# using subreddit
+threads_2 <- find_thread_urls(subreddit = ????, 
+                              sort_by = 'top', 
+                              period = 'year') %>% 
+  drop_na()
+
+rownames(threads_2) <- NULL
+
+# Sanitize text
+threads_2 %<>% 
+  mutate(across(
+    where(is.character),
+    ~ .x %>%
+        str_replace_all("\\|", "/") %>% 
+        str_replace_all("\\n", " ") %>%
+        str_squish()
+  ))
+
+head(threads_2, 3) %>% knitr::kable()
+```
+
+Lastly, let's search by both the keyword and subreddit.
+
+```{r}
+# using both subreddit and keyword
+threads_3 <- find_thread_urls(keywords= ????, 
+                              subreddit = ????, 
+                              sort_by = 'relevance', 
+                              period = 'all') %>% 
+  drop_na()
+
+rownames(threads_3) <- NULL
+
+# Sanitize text
+threads_3 %<>% 
+  mutate(across(
+    where(is.character),
+    ~ .x %>%
+        str_replace_all("\\|", "/") %>% 
+        str_replace_all("\\n", " ") %>% 
+        str_squish() 
+  ))
+
+head(threads_3, 3) %>% knitr::kable()
+```
+
+> Save `threads_1`, `threads_2`, and `threads_3` as CSV files for the sentiment analysis.
+  
+## 1-2. Downloading comments and additional information
+  
+The `find_thread_urls` function provides the title and text of threads but does not include comments of each thread -- it only shows the number of comments. To retrieve the comments, you can use the `get_thread_content` function, which takes the thread URLs returned by `find_thread_urls` as input. 
+
+One caveat is that this process can take quite a long time to run. In the example below, we use `get_thread_content` only for the first four threads to keep things manageable.
+
+```{r}
+# get individual comments
+threads_2_content <- get_thread_content(threads_2$url[1:4])
+```
+
+The output object `threads_2_content` consists of two data frames: `threads` and `comments`. 
+
+The `threads` data frame contains additional information that was not provided by `find_thread_urls`, such as the username of the poster, upvotes, and downvotes.
+
+> The `downvotes` column appears to be always zero, but the `up_ratio` column provides insight into how positively or negatively users reacted to the thread.
+
+```{r}
+names(threads_2_content)
+
+# check upvotes and downvotes
+print(threads_2_content$threads[,c('upvotes','downvotes','up_ratio')])
+```
+
+The `comments` data frame provides information on individual comments.
+
+```{r}
+# Sanitize text
+threads_2_content$comments %<>% 
+  mutate(across(
+    where(is.character),
+    ~ .x %>%
+        str_replace_all("\\|", "/") %>% 
+        str_replace_all("\\n", " ") %>% 
+        str_squish() 
+  ))
+
+head(threads_2_content$comments, 3) %>% knitr::kable()
+```
+
+  
+## 1-3. Analyzing Posting Date and Time
+  
+Using the date and timestamp information, we can analyze when posts are most popular on Reddit — by month, day, or hour.
+
+First, let's examine the number of threads per week over the last 12 months.
+You can do this by setting the `binwidth` in `geom_histogram()` to **one week in seconds**.
+
+```{r warning=F}
+# create new column: date
+threads_2 %<>% 
+  mutate(date = as.POSIXct(date_utc)) %>%
+  filter(!is.na(date))
+
+# number of threads by week
+threads_2 %>% 
+  ggplot(aes(x = date)) +
+  geom_histogram(color="black", position = 'stack', binwidth = ????) +
+  scale_x_datetime(date_labels = "%b %y",
+                   breaks = seq(min(threads_2$date, na.rm = T), 
+                                max(threads_2$date, na.rm = T), 
+                                by = "1 month")) +
+  theme_minimal()
+```
+
+Next, let's examine the day of the week. Do people tend to post more on weekdays or weekends?
+
+```{r warning=F}
+# create new columns: day_of_week, is_weekend
+threads_2 %<>%  
+  mutate(day_of_week = wday(date, label = TRUE)) %>% 
+  mutate(is_weekend = ifelse(day_of_week %in% c("Sat", "Sun"), "Weekend", "Weekday"))
+
+# number of threads by time of day
+threads_2 %>% 
+  ggplot(aes(x = day_of_week, fill = is_weekend)) +
+  geom_bar(color = 'black') +
+  scale_fill_manual(values = c("Weekday" = "gray", "Weekend" = "pink")) + 
+  theme_minimal()
+```
+
+What about the time of day? You can extract the time of day from the `timestamp` column. See how the `anytime` package is used below.
+
+```{r}
+print(threads_2$timestamp[1])
+print(threads_2$timestamp[1] %>% anytime(tz = anytime:::getTZ()))
+
+threads_2 %<>%  
+  mutate(time = timestamp %>% 
+           anytime(tz = anytime:::getTZ()) %>% 
+           str_split('-| |:') %>% 
+           sapply(function(x) as.numeric(x[4])))
+```
+
+Let's visualize the number of threads by time of day using the `time` column we made from `timestamp`.
+
+> Note: the times are shown in **our local time zone**, but the posters and commenters may be in different time zones.
+
+```{r warning=F}
+# number of threads by time of day
+threads_2 %>% 
+  ggplot(aes(x = time)) +
+  geom_histogram(bins = 24, color = 'black') +
+  scale_x_continuous(breaks = seq(0, 24, by=2)) + 
+  theme_minimal()
+```
+  
+  
+# 2. Tokenization and stop words
+  
+## 2-1. Tokenization
+  
+Tokenization is a fundamental first step in any Natural Language Processing (NLP) pipeline.
+
+> "Tokenization is a way of separating a piece of text into smaller units called tokens. Here, tokens can be either words, characters, or subwords. Hence, tokenization can be broadly classified into 3 types -- word, character, and subword (n-gram characters) tokenization" ([source](https://www.analyticsvidhya.com/blog/2020/05/what-is-tokenization-nlp/)).
+
+For example, consider the sentence: *"How are you?"* 
+
+* The most common approach is **word tokenization**, which breaks the sentence at spaces: *how*, *are*, *you*.
+* **Character tokenization** splits each character: *h*, *o*, *w*, …
+* **Subword tokenization** breaks words into meaningful subunits: e.g., *smart-er*.
+
+If we then encode each token as a number, we can represent text as numeric data.
+For instance, if we assign h = 1, e = 2, l = 3, o = 4, then:
+
+* hello → 1 2 3 3 4
+* heel → 1 2 2 3
+
+You can already see the similarity between hello and heel. This kind of tokenization will be useful later when we perform more advanced NLP tasks.
+
+For a more intuitive explanation, check out [this video](https://www.youtube.com/watch?v=fNxaJsNG3-s&t=1s).
+
+Next, let's tokenize the Reddit texts and plot the top 20 words to see which words appear most frequently. You will notice an issue: the plot includes many common words like *the, to, and, a, for*, etc. While it makes sense that these words appear often, they are *not useful for our analysis*.
+
+```{r}
+# Word tokenization
+words <- threads_2 %>% 
+  unnest_tokens(output = word, input = text, token = ????) # run `?tidytext::unnest_tokens` on the console
+
+words %>%
+  count(word, sort = TRUE) %>%
+  top_n(20) %>%
+  mutate(word = reorder(word, n)) %>%
+  ggplot(aes(x = word, y = n)) +
+  geom_col() +
+  xlab(NULL) +
+  coord_flip() +
+  labs(x = "words",
+       y = "counts",
+       title = "Unique wordcounts")
+
+```
+
+  
+## 2-2. Stop words
+  
+Those common words we just saw are known as **stop words** -- words that are typically filtered out during NLP processing because they contribute little meaningful information to text analysis. These are usually very common words such as articles, pronouns, conjunctions, and prepositions.
+
+We can remove stop words using a built-in dataset from the `tidytext` package.  
+
+```{r}
+# load list of stop words - from the tidytext package
+data("stop_words")
+# view random 50 words
+print(stop_words$word[sample(1:nrow(stop_words), 100)])
+```
+
+We will use **anti_join()** function to remove stop words from the text and leave behind a cleaned set of words. Like other *join* functions, the **order of the data frames matters**. Here's the logic:
+
+* `anti_join(A, B)` returns *everything in A* except the elements that also appear in B.
+* Conversely, `anti_join(B, A)` returns *everything in B* except what's in A.
+
+```{r}
+# Regex that matches URL-type string
+replace_reg <- "http[s]?://[A-Za-z\\d/\\.]+|&amp;|&lt;|&gt;"
+
+words_clean <- threads_2 %>% 
+  # drop URLs
+  mutate(text = str_replace_all(text, replace_reg, "")) %>%
+  # Tokenization (word tokens)
+  unnest_tokens(word, text, token = ????) %>% 
+  # drop stop words
+  anti_join(stop_words, by = "word") %>% 
+  # drop non-alphabet-only strings
+  filter(str_detect(word, "[a-z]"))
+
+# Check the number of rows after removal of the stop words. There should be fewer words now
+print(
+  glue::glue("Before: {nrow(words)}, After: {nrow(words_clean)}")
+)
+```
+
+
+Once you have removed the stop words, let's create a plot using the cleaned text to see which meaningful words are used most frequently.
+
+```{r}
+words_clean %>%
+  count(word, sort = TRUE) %>%
+  top_n(20, n) %>%
+  mutate(word = reorder(word, n)) %>%
+  ggplot(aes(x = word, y = n)) +
+  geom_col() +
+  xlab(NULL) +
+  coord_flip() +
+  labs(x = "words",
+       y = "counts",
+       title = "Unique wordcounts")
+
+```
+
+
+# 3. Word cloud
+
+Let's compare the **frequency of words** before and after removing stop words using a word cloud.
+
+```{r}
+words %>% 
+  count(word, sort = TRUE) %>% 
+  wordcloud2()
+```
+
+```{r}
+words_clean %>% 
+  count(word, sort = TRUE) %>% 
+  wordcloud2()
+```
+
+The word clouds generated above look nice, but their color schemes can be a bit overwhelming.
+
+
+The following block of code creates a custom color palette designed to highlight a selected number of words while graying out the rest. You can easily generate a collection of random colors using the **HSV (Hue, Saturation, Value)** color model.
+
+```{r}
+n <- 20 # number of words with color
+h <- runif(n, 0, 1) # any color
+s <- runif(n, 0.6, 1) # vivid
+v <- runif(n, 0.3, 0.7) # neither too dark or bright
+
+df_hsv <- data.frame(h = h, s = s, v = v)
+pal <- apply(df_hsv, 1, function(x) hsv(x['h'], x['s'], x['v']))
+pal <- c(pal, rep("grey", 10000))
+```
+
+```{r}
+words_clean %>% 
+  count(word, sort = TRUE) %>% 
+  wordcloud2(color = pal, 
+             minRotation = 0, 
+             maxRotation = 0, 
+             ellipticity = 0.8)
+```
+
+# 4. N-grams
+
+An **n-gram** is a sequence of *n* words that appear together. For example:
+
+* “basketball coach” and “dinner time” are bigrams (two words),
+* “the three musketeers” is a trigram (three words), and
+* “she was very hungry” is a fourgram (four words).
+
+In advanced text analysis and machine learning, specific tokens and n-grams are often used as features for modeling and classification tasks.
+
+N-grams are particularly useful for analyzing **words in context**. Consider these two sentences:
+
+* *“We need to check the details.”*
+* *“Can we pay it with a check?”*
+
+The word “*check*” functions as a verb in the first sentence and a noun in the second.
+We can understand its meaning based on the **surrounding words**, especially those immediately before or after it.
+For example, when “*check*” follows “*to*”, it’s likely being used as a verb.
+
+As an example of **bigram**, the sentence "*The result of separating bigrams is helpful for exploratory analyses of the text.*" 
+becomes a list of **paired words**:\
+1 the result\
+2 result of\
+3 of separating\
+4 separating bigrams\
+5 bigrams is\
+6 is helpful\
+7 helpful for\
+8 for exploratory\
+9 exploratory analyses\
+10 analyses of\
+11 of the\
+12 the text
+
+```{r}
+# Get ngrams. You may try playing around with the value of n, n=3, n=4
+words_ngram <- threads_2 %>%
+  mutate(text = str_replace_all(text, replace_reg, "")) %>%
+  select(text) %>%
+  unnest_tokens(output = paired_words,
+                input = text,
+                token = "ngrams",
+                n = 2)
+```
+
+```{r}
+# Show ngrams with sorted values
+words_ngram %>%
+  count(paired_words, sort = TRUE) %>% 
+  head(20) %>% 
+  knitr::kable()
+```
+
+
+Here, we can see that the n-grams still contain stop words such as a, to, and so on.
+Next, we’ll extract n-grams without stop words.
+We can use the `separate` function from the `tidyr` package to split each bigram into two columns: *word 1* and *word 2*. Then, we filter out any rows where either column contains a stop word using the `filter` function.
+
+```{r}
+#separate the paired words into two columns
+words_ngram_pair <- words_ngram %>%
+  separate(paired_words, c("word1", "word2"), sep = " ")
+
+# filter rows where there are stop words under word 1 column and word 2 column
+words_ngram_pair_filtered <- words_ngram_pair %>%
+  # drop stop words
+  filter(!word1 %in% stop_words$word & !word2 %in% stop_words$word) %>% 
+  # drop non-alphabet-only strings
+  filter(str_detect(word1, "[a-z]") & str_detect(word2, "[a-z]"))
+
+# Filter out words that are not encoded in ASCII
+# To see what's ASCII, google 'ASCII table'
+library(stringi)
+words_ngram_pair_filtered %<>% 
+  filter(stri_enc_isascii(word1) & stri_enc_isascii(word2))
+
+# Sort the new bi-gram (n=2) counts:
+words_counts <- words_ngram_pair_filtered %>%
+  count(word1, word2) %>%
+  arrange(desc(n))
+
+head(words_counts, 20) %>% 
+  knitr::kable()
+```
+
+Finally, by using the `igraph` and `ggraph` packages, we can visualize **words occurring in pairs**, which allows us to see common relationships between words in the text.
+
+```{r}
+# plot word network
+words_counts %>%
+  filter(n >= 3) %>%
+  graph_from_data_frame() %>% # convert to graph
+  ggraph(layout = "fr") +
+  geom_edge_link(aes(edge_alpha = .6, edge_width = n)) +
+  geom_node_point(color = "darkslategray4", size = 3) +
+  geom_node_text(aes(label = name), vjust = 1.8) +
+  labs(title = "Word Networks",
+       x = "", y = "")
+
+```
+
