@@ -1,0 +1,455 @@
+---
+title: "Sentiment Analysis"
+author: 'Uijeong "UJ" Hwang'
+date: '2025-11-12'
+output:
+  rmdformats::downcute:
+    downcute_theme: "chaos"
+---
+
+<style type="text/css">
+  body{
+  font-family: Arial;
+  }
+</style>
+
+```{r load-packages, include=FALSE}
+# Package names
+packages <- c( "tidytext", "tidyverse", "textdata", "anytime", "magrittr", "wordcloud2",
+              "ggdark", "syuzhet", "sentimentr", "lubridate", "here")
+
+# Install packages not yet installed
+installed_packages <- packages %in% rownames(installed.packages())
+if (any(installed_packages == FALSE)) {
+install.packages(packages[!installed_packages])
+}
+
+# Load packages
+invisible(lapply(packages, library, character.only = TRUE))
+```
+
+Sentiment analysis uses Natural Language Processing (NLP) and related techniques to identify and quantify emotional or affective states. Much like the progress seen in computer vision, recent advancements have produced well-packaged, user-friendly models that can be readily applied out of the box. In this chapter, we will explore a range of models--from basic to advanced--and practice applying them in various scenarios.
+
+# 1. Rule-based Models
+
+## 1-1. Bag-of-Words (or dictionary) model: `syuzhet` package
+
+The Bag-of-Words (BoW) model is one of the simplest techniques used in NLP and text mining for representing and analyzing text data. In this model, a text (such as a sentence or document) is represented as an unordered collection or "bag" of its words. Grammar, word order, and structural structure are ignored.
+
+Let's begin by calculating sentiment scores for a few example sentences. The different methods (`syuzhet`, `bing`, `afinn`, `nrc`) correspond to general-purpose sentiment dictionaries commonly used in NLP. A positive score indicates a positive emotional valence.
+
+> **Valence** in NLP refers to the intrinsic pleasantness or unpleasantness of an event, object, or situation described in a text.
+
+```{r}
+text_1 <- c("R is a very powerful tool for data analysis.",
+             "I hate bugs in code. They are so annoying.",
+             "I love programming in R! It’s so fun.")
+
+# syuzhet package
+get_sentiment(text_1, method='syuzhet')
+get_sentiment(text_1, method='bing')
+get_sentiment(text_1, method='afinn')
+get_sentiment(text_1, method='nrc')
+```
+
+Using the NRC sentiment dictionary, you can examine the presence of eight different emotions in addition to the overall valence.
+
+```{r}
+get_nrc_sentiment(text_1)
+```
+
+But wait -- if the models classifies 'hate' as a negative word and 'love' as a positive word, what happens with 'not love'? Let's explore this in the next example.
+
+```{r}
+text_2 <- c("I love programming in R! It’s fun.",
+             "I don't love programming in R! It’s not fun.")
+
+# syuzhet package
+get_sentiment(text_2, method='syuzhet')
+get_sentiment(text_2, method='bing')
+get_sentiment(text_2, method='afinn')
+get_sentiment(text_2, method='nrc')
+```
+
+This example illustrates one of the early challenges in sentiment analysis: understanding not only individual words but also the context in which they appear. When you run a basic sentiment analysis using a Bag-of-Words model, it cannot interpret context and instead treats each word independently. As a result, words like *love* and *fun* contribute to a positive score in both sentences, even when preceded by *not*, which completely changes the sentiment.
+
+## 1-2. Negation handling model: `sentimentr` package
+
+Handling negation in NLP is crucial, as negation can entirely change the sentiment or meaning of a sentence.
+
+`sentimentr` uses the same dictionary lookup approach as the previous model, but it also takes into account **valence shifters** (i.e., words that alter or intensify the polarity of words):
+
+* **A negator** flips the sign of a polarized word:  
+*`r head(lexicon::hash_valence_shifters[y==1]$x, 10)`*
+* **An amplifier (intensifier)** increases the impact of a polarized word:  
+*`r head(lexicon::hash_valence_shifters[y==2]$x, 10)`*
+* **A de-amplifier (downtoner)** reduces the impact of a polarized word:  
+*`r head(lexicon::hash_valence_shifters[y==3]$x, 10)`*
+* **An adversative conjunction** overrules the previous clause containing a polarized word:  
+*`r head(lexicon::hash_valence_shifters[y==4]$x, 10)`*
+
+Let's run the model using example sentences.
+
+```{r warning=F}
+text_3 <- c("I love programming in R! It’s fun.",
+             "I love programming in R so much! It's really fun.",
+             "I don't love programming in R! It’s not fun.",
+             "I don't love programming in R at all! It’s clearly not fun.")
+
+# by string
+sentiment_by(text_3)
+
+# by sentence
+sentiment(text_3)
+
+```
+
+### Sentiment Analysis on 2012 Presidential Debates
+
+Let's apply this model to a transcript from the three presidential debates held during the 2012 election, available in the `sentimentr` package. First, we will take a look at the dataset. The `person` column lists the names of the two candidates as well as the three moderators.
+
+```{r}
+presidential_debates_2012[20:30,] ## %>% knitr::kable()
+```
+
+By applying the model to this dataset, we can determine who spoke more positively or negatively.
+
+```{r}
+debates_sentiment <- presidential_debates_2012 %>%
+  filter(role == "candidate") %>% 
+  mutate(dialogue_split = get_sentences(dialogue)) %$%
+  sentiment_by(dialogue_split, list(person, time))
+
+debates_sentiment %>% arrange(desc(ave_sentiment)) ## %>% knitr::kable()
+```
+
+Plot the distribution of sentiment per sentence.
+
+```{r}
+plot(debates_sentiment)
+```
+
+### Can the model handle sarcasm?
+
+Let's test some sentences with "Bless your heart", a Southern phrase with different meanings depending on the context and tone.
+
+```{r}
+# 'Bless your heart' test
+
+text_4 <- c(
+  # Not sarcastic
+  'I heard that you have been through a lot lately. Bless your heart. Things will get better soon.',
+  # Without 'bless your heart'
+  'I heard that you have been through a lot lately. Things will get better soon.',
+  
+  # Sarcastic
+  'You really thought that was a good idea? Bless your heart.',
+  # Without 'bless your heart'
+  'You really thought that was a good idea?')
+
+sentiment_by(text_4)
+```
+
+The result highlights a clear limitation of the dictionary method -- it lacks an understanding of **context**. The model cannot capture nuances or interpret meaning beyond predefined word associations.
+
+  
+# 2. Deep learning model
+
+> In this section, we will employ a deep learning model; unfortunately, R is not the most conducive environment for training or testing such models. As expected, Python is the preferred option when it comes to deep learning due to its extensive libraries and community support. Similar to our approach in the computer vision module, we will utilize Google Colab ([link](https://colab.research.google.com/drive/1rynmZRcvB052PFaVQ2DsHrMYD1vyPN4Y?usp=sharing)). Upload (i.e., drag and drop) your Reddit data in csv format to your Colab session. If you have trouble getting Reddit data, you might as well use [this data](https://ujhwang.github.io/urban-analytics-2024/Lab/module_5/sample_reddit.csv): Reddit threads retrieved in November 2023 using a keyword "flu shot".
+
+In NLP, the state-of-the-art model architecture is undoubtedly **Transformer** (Check out the benchmark [here](https://web.archive.org/web/20250512204932/https://paperswithcode.com/sota/sentiment-analysis-on-sst-2-binary)). The architecture was introduced in 2017 and has since become a foundation for many NLP models. The Transformer architecture has been highly influential in NLP due to its ability to handle long-range dependencies in text and its scalability, allowing the training of large models that capture intricate language patterns and semantics.
+
+Timeline of popular Transformer model releases ([source](https://huggingface.co/blog/bert-101#1-what-is-bert-used-for)):
+![](transformer_timeline.png)
+
+The script in Colab will demonstrate how to use a pre-trained **BERT** (Bidirectional Encoder Representations from Transformers) model to predict the sentiment of a given text. Developed by Google, BERT is a powerful language processing AI model designed for a range of NLP tasks.
+
+BERT reads text and pays attention to the surrounding words to understand the context of each word. This is the “bidirectional” part, as it learns about the word based on the words that come before and after it, unlike older models which typically read text in one direction (left to right).
+
+Thus, BERT helps computers better understand the **meaning of words** ***in a sentence***. Imagine you are learning a new language. When you hear or see a sentence, you don't just look at each word in isolation -- you look at the words around it to understand its meaning and context. If someone says, *It's raining cats and dogs*, you understand that it's an expression meaning it's raining heavily, not that pets are falling from the sky.
+
+Let's proceed to the [Colab](https://colab.research.google.com/drive/1rynmZRcvB052PFaVQ2DsHrMYD1vyPN4Y?usp=sharing) and analyze the sentiment of Reddit threads using the BERT model. Come back to this script once you complete running the code from Colab.
+
+## 2-1. Import the result
+
+Import the sentiment analysis result data processed from Colab.
+
+```{r}
+# import the data
+reddit_sentiment <- read_csv(????)
+
+# drop NAs
+reddit_sentiment %<>% drop_na('bert_label')
+```
+
+## 2-2. Comparison with the dictionary method
+
+Get sentiment scores using the dictionary method for comparison.
+
+```{r}
+# Join thread title and text.
+reddit_sentiment %<>%
+  mutate(title = replace_na(title, ""),
+         text = replace_na(text, ""),
+         title_text = str_c(title, text, sep = ". "))
+
+# dictionary method
+reddit_sentiment_dictionary <- sentiment_by(reddit_sentiment$title_text)
+
+reddit_sentiment$sentiment_dict <- reddit_sentiment_dictionary %>% pull(ave_sentiment)
+reddit_sentiment$word_count <- reddit_sentiment_dictionary %>% pull(word_count)
+```
+
+Check the correlation between the sentiment values from two different methods.
+
+```{r}
+reddit_sentiment %<>% mutate(bert_label_numeric = str_sub(bert_label, 1, 1) %>% as.numeric())
+
+cor(reddit_sentiment$bert_label_numeric, reddit_sentiment$sentiment_dict)
+```
+
+0.28 implies a mild positive correlation. However, in the scatter plot below, the two do not seem to be very correlated. The threads that got 4-5 stars from the BERT model are mostly below 0 (meaning negative) in the dictionary method.
+
+```{r}
+ggplot(data = reddit_sentiment, aes(x = bert_label_numeric, y = sentiment_dict)) +
+  geom_jitter(width = 0.1, height = 0) +
+  geom_line(aes(y = 0), color = '#FFD700', lwd = 1, linetype='dashed') +
+  dark_theme_grey()
+```
+
+> By the way, why did we use `geom_jitter` in the previous code block?
+
+Let's look at some example threads and the predicted sentiment, and see which method makes more sense.
+  
+* BERT: 1 star (negative) vs. 5 stars (positive)
+
+```{r}
+bert_example <- reddit_sentiment %>%
+  filter(bert_label_numeric %in% c(1,5)) %>%
+  group_by(bert_label) %>%
+  arrange(desc(bert_score)) %>%
+  slice_head(n = 3) %>%
+  ungroup()
+
+# 1 star
+bert_example %>% filter(bert_label_numeric == 1) %>% pull(title_text) %>% print()
+
+# 5 star
+bert_example %>% filter(bert_label_numeric == 5) %>% pull(title_text) %>% print()
+```
+  
+* Dictionary method: negative vs. positive
+
+```{r}
+sentimentr_example <- reddit_sentiment %>%
+  mutate(sentimentr_abs = abs(sentiment_dict),
+         sentimentr_binary = case_when(sentiment_dict > 0 ~ 'positive',
+                                       TRUE ~ 'negative')) %>%
+  group_by(sentimentr_binary) %>%
+  arrange(desc(sentimentr_abs)) %>%
+  slice_head(n = 3) %>%
+  ungroup() %>%
+  arrange(sentiment_dict)
+
+# negative
+sentimentr_example %>% filter(sentimentr_binary == 'negative') %>% pull(title_text) %>% print()
+
+# positive
+sentimentr_example %>% filter(sentimentr_binary == 'positive') %>% pull(title_text) %>% print()
+```
+
+
+# 3. Visualization
+
+Let's visualize the sentiment analysis result from the BERT model.
+
+## 3-1. Sentiment distribution
+  
+* Number of threads by sentiment category.
+
+```{r}
+reddit_sentiment %>%
+  ggplot(aes(x = bert_label)) +
+  geom_????(fill = "white") +
+  dark_theme_gray()
+```
+  
+* Word counts by sentiment category.
+
+```{r}
+reddit_sentiment %>%
+  ggplot(aes(x = bert_label, y = ????)) +
+  geom_jitter(height = 0, width = 0.05) +
+  stat_summary(fun = mean, geom = "crossbar", width = 0.4, color = "red") +
+  dark_theme_gray()
+```
+  
+* Association between a thread's sentiment and the number of comments on the thread.
+
+```{r warning=F}
+# Remove outliers
+reddit_sentiment_rm_outlier <- reddit_sentiment %>%
+  group_by(bert_label) %>%
+  filter(
+    between(
+      comments,
+      quantile(comments, 0.25) - 1.5 * IQR(comments),
+      quantile(comments, 0.75) + 1.5 * IQR(comments)))
+
+# Correlation analysis
+cor.test(reddit_sentiment_rm_outlier$comments, reddit_sentiment_rm_outlier$bert_label_numeric)
+
+# Scatterplot
+reddit_sentiment_rm_outlier %>%
+  ggplot(aes(x = bert_label_numeric, y = ????)) +
+  geom_jitter(height = 0, width = 0.05) + 
+  geom_smooth(method = 'loess', span = 0.75) +
+  dark_theme_gray()
+
+```
+
+## 3-2. Word clouds
+
+Using word clouds, we can visualize the words that appear most frequently in positive and negative threads. Using the same code from the previous lab session, we will tokenize the text and remove stop words.
+
+```{r}
+# Stop word removal and tokenization
+data("stop_words")
+replace_reg <- "http[s]?://[A-Za-z\\d/\\.]+|&amp;|&lt;|&gt;"
+
+reddit_sentiment_clean <- reddit_sentiment %>%
+  mutate(title_text = str_replace_all(title_text, replace_reg, "")) %>%
+  # tokenize
+  ????(word, title_text, token = ????) %>%
+  # remove stop words
+  ????(stop_words, by = "word") %>%
+  filter(str_detect(word, "[a-z]")) %>%
+  filter(!word %in% c('flu','shot','shots')) # You need to replace this with your keyword
+```
+
+We are not interested in words that are commonly seen in both positive and negative threads. We can identify words that are uniquely seen in either positive or negative threads using `anti_join`.
+
+```{r}
+# negative text
+reddit_sentiment_clean_negative <- reddit_sentiment_clean %>%
+  filter(bert_label_numeric %in% c(1,2))
+# positive text
+reddit_sentiment_clean_positive <- reddit_sentiment_clean %>%
+  filter(bert_label_numeric %in% c(4,5))
+
+# Remove words that are commonly seen in both negative and positive threads
+reddit_sentiment_clean_negative_unique <- reddit_sentiment_clean_negative %>%
+  anti_join(reddit_sentiment_clean_positive, by = 'word')
+reddit_sentiment_clean_positive_unique <- reddit_sentiment_clean_positive %>%
+  anti_join(reddit_sentiment_clean_negative, by = 'word')
+```
+  
+* Words appearing in negative threads.
+
+```{r}
+# Wordcloud with a custom color palette
+n <- 20
+h <- runif(n, 0, 1) # any color
+s <- runif(n, 0.6, 1) # vivid
+v <- runif(n, 0.3, 0.7) # neither too dark nor too bright
+
+df_hsv <- data.frame(h = h, s = s, v = v)
+pal <- apply(df_hsv, 1, function(x) hsv(x['h'], x['s'], x['v']))
+pal <- c(pal, rep("grey", 10000))
+
+reddit_sentiment_clean_negative_unique %>%
+  count(word, sort = TRUE) %>%
+  ????(color = pal,
+       minRotation = -pi/6,
+       maxRotation = -pi/6,
+       rotateRatio = 1)
+```
+
+* Words appearing in positive threads.
+
+```{r}
+# Wordcloud with a custom color palette
+n <- 20
+h <- runif(n, 0, 1) # any color
+s <- runif(n, 0.6, 1) # vivid
+v <- runif(n, 0.3, 0.7) # neither too dark nor too bright
+
+df_hsv <- data.frame(h = h, s = s, v = v)
+pal <- apply(df_hsv, 1, function(x) hsv(x['h'], x['s'], x['v']))
+pal <- c(pal, rep("grey", 10000))
+
+reddit_sentiment_clean_positive_unique %>%
+  count(word, sort = TRUE) %>%
+  ????(color = pal,
+       minRotation = pi/6,
+       maxRotation = pi/6,
+       rotateRatio = 1)
+```
+
+## 3-3. Temporal analysis
+
+For the temporal analysis, create the following columns: `date`, `year`, `day_of_week`, `is_weekend`, and `time`
+```{r}
+reddit_sentiment %<>%
+  mutate(date = as.POSIXct(date_utc)) %>%
+  filter(!is.na(date)) %>%
+  mutate(year = year(date),
+         day_of_week = wday(date, label = TRUE),
+         is_weekend = ifelse(day_of_week %in% c("Sat", "Sun"), "Weekend", "Weekday"),
+         time = timestamp %>%
+           anytime(tz = anytime:::getTZ()) %>%
+           str_split('-| |:') %>%
+           sapply(function(x) as.numeric(x[4])))
+```
+  
+* Sentiment by year using a stacked bar plot.
+
+```{r}
+# sentiment by year
+reddit_sentiment %>%
+  filter(year >= 2018) %>% 
+  ggplot(aes(x = ????, fill = bert_label)) +
+  geom_????(position = 'stack') +
+  scale_x_continuous(breaks = seq(min(reddit_sentiment$year),
+                                  max(reddit_sentiment$year),
+                                  by = 1)) +
+  scale_fill_brewer(palette = 'PuRd', direction = -1) +
+  dark_theme_grey()
+```
+
+* Proportional stacked bar plot (`position = 'fill'`).
+
+```{r}
+# sentiment by year
+reddit_sentiment %>%
+  filter(year >= 2018) %>% 
+  ggplot(aes(x = ????, fill = bert_label)) +
+  geom_????(position = ????) +
+  scale_x_continuous(breaks = seq(min(reddit_sentiment$year),
+                                  max(reddit_sentiment$year),
+                                  by = 1)) +
+  scale_fill_brewer(palette = 'PuRd', direction = -1) +
+  dark_theme_grey()
+```
+
+* Sentiment by day of week.
+
+```{r}
+# sentiment by day
+reddit_sentiment %>%
+  ggplot(aes(x = ????, fill = bert_label)) +
+  geom_????(position = ????) +
+  scale_fill_brewer(palette = 'PuRd', direction = -1) +
+  dark_theme_grey()
+```
+
+* Sentiment by time of day.
+
+```{r}
+reddit_sentiment %>%
+  ggplot(aes(x = ????, fill = bert_label)) +
+  geom_histogram(bins = 24, position = 'fill', color = 'black', lwd = 0.2) +
+  scale_x_continuous(breaks = seq(0, 24, by=1)) +
+  scale_fill_manual(values = c('#bc5090', '#bc5090', '#ff6361', '#ffa600', '#ffa600')) +
+  dark_theme_grey()
+```
