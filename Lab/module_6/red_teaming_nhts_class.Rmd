@@ -1,0 +1,391 @@
+---
+title: "Red Teaming Household Travel Data"
+author: 'Uijeong "UJ" Hwang'
+date: '2025-11-24'
+output:
+  rmdformats::downcute:
+    downcute_theme: "chaos"
+---
+
+```{=html}
+<style type="text/css">
+  body{
+  font-family: Arial;
+  }
+</style>
+```
+
+```{r message=FALSE, warning=FALSE, echo=F}
+library(tidyverse)
+library(magrittr)
+library(sf)
+library(tmap)
+library(kableExtra)
+library(leaflet)
+library(leafsync)
+ttm()
+```
+
+# Introduction
+
+Mobility and travel survey data are widely used in transportation planning and travel behavior research. Although these datasets often remove direct identifiers such as names or addresses, they still contain rich behavioral and temporal information that can make individuals or households re-identifiable.
+
+In this lab, we explore *red teaming* -- a practice of simulating adversarial attacks to test and improve data security. We will apply a red-team perspective to uncover vulnerabilities in a household travel survey dataset.
+
+![](red_team_blue_team.png)
+
+Instead of asking "Is this dataset safe?", we ask a more adversarial question:
+
+> "If someone wanted to identify a specific household, what could they infer from the available data?"
+
+We use a fictional scenario: **a bike thief attempting to narrow down potential target households using the 2017 NHTS Georgia Add-On survey**.
+
+**Disclaimer**:
+  
+  * This exercise is designed solely to teach data ethics, privacy, and responsible data use. 
+  * All location data used in this lab has been randomized for instructional purposes. No real household locations are exposed. 
+  * The purpose is to understand why sensitive variables must be protected -- not to demonstrate exploitation.
+
+
+# NHTS & Georgia Add-On
+
+The National Household Travel Survey (NHTS) is a periodic national survey conducted by the Federal Highway Administration to provide comprehensive data on travel patterns in the United States. It captures detailed information on daily trips, modes of transportation, purposes, travel times, household demographics, and vehicle ownership.
+  
+States and regional agencies can purchase Add-On samples to expand the number of surveyed households within their own jurisdictions. The Georgia Add-On supplements the NHTS sample with additional households in Georgia, which allows more detailed regional analysis and applications such as travel demand modeling and transportation planning. The survey structure mirrors the national dataset but with larger sample sizes.
+
+## Data Overview
+
+You can obtain the 2017 NHTS Georgia add-on data from the [Transportation Secure Data Center (TSDC)](https://www.nrel.gov/transportation/secure-transportation-data/tsdc-2017-national-household-travel-survey-georgia-add-on). If it is your first time using the platform, you must request access before downloading the data, which can be done in less than a minute.
+
+Once downloaded, you can import the survey files and take a quick look.
+
+```{r warning=F}
+trip <- read_csv(????, show_col_types = FALSE)
+person <- read_csv(????, show_col_types = FALSE)
+household <- read_csv(????, show_col_types = FALSE)
+vehicle <- read_csv(????, show_col_types = FALSE)
+location <- read_csv(????, show_col_types = FALSE)
+```
+
+```{r warning=F}
+# Person data
+kable(person[1:5,])
+
+# Trip data
+kable(trip[1:5,])
+
+# Household data
+kable(household[1:5,])
+
+# Vehicle data
+kable(vehicle[1:5,])
+
+# Location data
+kable(location[1:5,])
+```
+
+NHTS and Add-On survey datasets consist of five files: *trip*, *person*, *household*, *vehicle*, and *location*. All files share a common ID column, `sampno`, which functions as the household ID because households are the primary sampling unit in travel surveys.
+  
+Most columns use numerical codes. Refer to the survey's [codebook](https://ujhwang.github.io/urban-analytics-2025/Lab/module_6/codebook.xlsx) Excel file to interpret these values.
+
+
+## Confidential Data
+
+You may have noticed that several columns are redacted in the **cleansed** version of the dataset you downloaded. These fields are intentionally removed because they contain sensitive or potentially identifying information. Examples include:
+  
+  * Person data: age
+  * Vehicle data: vehicle model
+  * Location data: longitude, latitude, location name, street address, full address...
+  
+According to the TSDC, "*To access latitude and longitude spatial data along with other redacted fields from transportation studies and surveys, submit an application to connect to a restricted secure portal environment*", which is not feasible within the scope of our class.
+  
+Another option is to request the raw dataset directly from the state DOT or MPO that conducted the survey. Many agencies provide access to unredacted travel survey data -- often including precise coordinates -- under a formal **confidentiality agreement**. Here is one example from the Virginia DOT (a similar process is required by Georgia DOT):
+  
+<embed src="https://www.vdot.virginia.gov/media/vdotvirginiagov/doing-business/technical-guidance-and-support/transportation-and-mobility/transportation-modeling/NHTS_Data_Request_Form_acc010423_PM.pdf" width="100%" height="800px">
+  
+I obtained the unredacted Georgia Add-On dataset under such an agreement. Naturally, the raw dataset cannot be shared. As stated explicitly in the agreement, "*unauthorized release of confidential data or specific identification of households or individuals in a confidentiality-protected dataset as the NHTS is a felony offense and could result in criminal prosecution.*"
+  
+For instructional purposes in this lab, I prepared a randomized home location data. It includes only `sampno`, `longitude`, and `latitude`, and the household IDs have been shuffled to prevent any possibility of re-identification or linkage with the original dataset.
+
+```{r warning=F}
+location_home_shuffled <- read_csv("https://ujhwang.github.io/urban-analytics-2025/Lab/module_6/location_home_shuffled.csv", 
+                                   show_col_types = FALSE)
+
+kable(location_home_shuffled[1:5,])
+```
+
+
+# Red Team: Bike Thief Scenario
+
+In this fictional scenario, we take the perspective of a bike thief trying to identify vulnerable households. The thief's goal is to steal bikes in broad daylight when no one is home. To do so, they look for households that meet the following conditions:
+  
+  1. The household owns a bike -- ideally a valuable one.
+  2. Every household member has a regular routine or activity outside the home, which increases the likelihood that no one is present during the day.
+  3. These routine activities should not involve biking, so the bike stays at home while the household is away.
+  4. There is at least a one-hour window during which the house is completely unoccupied, giving the thief enough time to break in and steal the bike.
+
+## Condition 1: Bike ownership
+
+Let's first narrow down the households by bike ownership. The `person` data contains information on bike usage patterns. For example:
+  
+* `nbiketrp`: *In the past 7 days, how many times did you ride a bicycle outside including bicycling to go somewhere or for exercise?*
+* `bikeshare`: *In the past 30 days, how many times did you use a bike share program?*
+  
+Based on these variables, we assume that people who rode a bike at least once but did not use bike-share program likely own a personal bike.
+
+```{r}
+# Bike-owning individuals
+person %<>% mutate(bikeown = ???? >= 1 & ???? <= 0)
+
+print(paste0(round(sum(person$bikeown)/nrow(person)*100, 1),"% of individuals own bikes."))
+```
+
+Next, by matching the household IDs of these individuals with the `household` data, we can identify which households own at least one bike.
+
+```{r}
+# Household ID of the bike-owning individuals
+sampno_bikeown <- person %>% 
+  filter(????) %>% 
+  pull(sampno)
+
+# Bike-owning households
+household %<>% mutate(bikeown = sampno %in% sampno_bikeown)
+
+print(paste0(round(sum(household$bikeown)/nrow(household)*100, 1),"% of households own bikes."))
+```
+
+Additionally, we want to prioritize households that are more likely to own higher-value bikes. While we do not have direct information on bicycle value, household income can serve as a reasonable proxy. higher-income households are generally more likely to purchase higher-quality or higher-priced bicycles. Therefore, we filter households with annual household income above $100,000 (refer to the [codebook](https://ujhwang.github.io/urban-analytics-2025/Lab/module_6/codebook.xlsx) for the corresponding numeric category).
+
+
+```{r}
+# Expensive-bike-owning households
+print(paste0(round(sum(household$bikeown & household$hhfaminc >= ????)/nrow(household)*100, 1),
+             "% of households are likely to own expensive bikes."))
+
+```
+
+## Condition 2 & 3: Occupancy patterns
+
+To identify households that are likely to be unoccupied during daytime hours, we examine routine activity patterns. Specifically, we look for individuals who regularly leave home for work, school, or child-care trips.  These trips should NOT be made by bike, as we want the bike remain at home. We also exclude individuals who telework, since they are more likely to be at home during the day.
+  
+The key variables we use are:
+  
+* `whyto`: *Trip purpose*
+* `trptrans`: *Trip mode*
+* `wrk_home`: *Do you usually work from home?*
+
+```{r}
+# Create a person_id to join `person` and `trip`
+person %<>% mutate(person_id = str_c(sampno, perno, sep = "_"))
+trip %<>% mutate(person_id = str_c(sampno, perno, sep = "_"))
+
+# Trips for work, school, or child care that were not made by bike
+routine_trip <- trip %>% 
+  filter(whyto %in% c(????, ????, ????) & trptrans != ????) # Refer to the codebook
+
+# Individuals who made those trips + no telework
+person %<>% 
+  mutate(routine_trip = person_id %in% ????$person_id & wrk_home != 1)
+
+print(paste0(round(sum(person$routine_trip)/nrow(person)*100, 1),
+             "% of individuals have routine outside activities and do not telework."))
+
+```
+
+A household meets the condition if EVERY member participates in such routine outside activities.
+
+```{r}
+# All household members have routine activities
+person %<>% 
+  group_by(sampno) %>% 
+  mutate(all_routine_trip = all(routine_trip)) %>% 
+  ungroup()
+
+# Household ID of those individuals
+sampno_all_routine_trip <- person %>% 
+  filter(all_routine_trip) %>% 
+  pull(sampno)
+
+# Households that meet the condition
+household %<>% 
+  mutate(all_routine_trip = sampno %in% sampno_all_routine_trip)
+
+print(paste0(round(sum(household$all_routine_trip)/nrow(household)*100, 1),
+             "% of households in which all members have routine outside activities and do not telework."))
+
+```
+
+## Condition 4: Temporal Vulnerabilities
+
+Even if a household owns a bike and all members have routine outside activities, the timing of those activities matters. To be a viable target, there must be a continuous window during the day when the house is unoccupied. For this scenario, we consider households with at least one hour of unoccupied time between the last departure and first return of any household member. 
+  
+The calculation uses the following variables:
+  
+* `strttime17`: *Trip start time (date and time format)*
+* `endtime17`: *Trip end time (date and time format)*
+* `o_locno`: *Trip origin location identifier* (used to find the last departure from home)
+* `locno`: *Trip destination location identifier* (used to find the first arrival at home)
+
+```{r warning=F}
+# Time window between last depature and first return for each household
+window <- trip %>%
+  group_by(sampno) %>%
+  summarize(
+    last_depart_time = max(strttime17[o_locno == 100 & whyto %in% c(????, ????, ????)], na.rm = TRUE),
+    first_arrive_time = min(endtime17[locno == 100], na.rm = TRUE),
+    .groups = "drop"
+  ) %>% 
+  mutate(mininum_1h_window = first_arrive_time - last_depart_time >= ????)
+
+# ID of households with at least one-hour window
+sampno_minimum_1h_window <- window %>% 
+  filter(mininum_1h_window) %>% 
+  pull(sampno)
+
+# Households with at least one-hour window
+household %<>% 
+  mutate(minimum_1h_window = sampno %in% sampno_minimum_1h_window)
+
+print(paste0(round(sum(household$minimum_1h_window)/nrow(household)*100, 1),
+             "% of households have at least one-hour window during which the house is empty."))
+
+```
+
+## Candidate Households
+
+After applying all four conditions -- bike ownership, high household income (as a proxy for expensive bikes), routine outside activities for all members, and at least a one-hour window of unoccupied time -- we can identify the households that are most vulnerable in our scenario. These households satisfy all criteria and represent potential targets in our fictional exercise.
+
+```{r}
+target_household <- household %>% 
+  filter(???? & # own a bike
+           hhfaminc >= ???? & # high income
+           ???? & # routine outside activities for all household members
+           ????) # at least one-hour window
+
+print(paste0("There are ", 
+             nrow(target_household), 
+             " households that meet all the conditions, which is ",
+             round(nrow(target_household)/nrow(household)*100, 2), 
+             "% of all households in the survey."))
+```
+
+Next, we can visualize the geographic distribution of these candidate households. This map tells us where the most "vulnerable" households would be in our fictional scenario.
+
+> Note: The locations in this map are not real and have been randomized to prevent any possibility of re-identifying actual households.
+
+```{r}
+target_household %<>% left_join(location_home_shuffled, by = "sampno")
+
+target_household_sf <- target_household %>% 
+  st_as_sf(coords = c("longitude", "latitude"), crs = 4326)
+
+tm_basemap("OpenStreetMap") + 
+  tm_shape(target_household_sf) + tm_dots(fill = "red", size = 1)
+```
+
+
+# Blue Team: Mitigation Strategies
+
+## Limiting Geographic Precision
+
+One way to protect privacy in geospatial datasets is to reduce the precision of location coordinates. By rounding latitude and longitude values, we intentionally introduce small spatial errors, which makes it more difficult for an adversary to identify specific households while still preserving overall spatial patterns for analysis.
+
+In this example, we create three versions of the household locations:
+  
+* Actual coordinates: the original values with full precision.
+* 3-decimal precision: rounded to 0.001 degrees, roughly ~110 meters (360 feet) of spatial uncertainty.
+* 2-decimal precision: rounded to 0.01 degrees, roughly ~1.1 kilometer (0.7 mile) of spatial uncertainty.
+* 1-decimal precision: rounded to 0.1 degrees, roughly ~11 kilometer (7 mile) of spatial uncertainty.
+
+
+```{r}
+# Actual coordinates
+location_home_shuffled_sf <- location_home_shuffled %>% 
+  st_as_sf(coords = c("longitude", "latitude"), crs = 4326)
+
+# Coordinates in 3-decimal precision
+location_home_shuffled_sf_3dp <- location_home_shuffled %>% 
+  mutate(longitude_3dp = round(longitude, 3),
+         latitude_3dp = round(latitude, 3)) %>% 
+  st_as_sf(coords = c("longitude_3dp", "latitude_3dp"), crs = 4326)
+
+# Coordinates in 2-decimal precision
+location_home_shuffled_sf_2dp <- location_home_shuffled %>% 
+  mutate(longitude_2dp = round(longitude, 2),
+         latitude_2dp = round(latitude, 2)) %>% 
+  st_as_sf(coords = c("longitude_2dp", "latitude_2dp"), crs = 4326)
+
+# Coordinates in 1-decimal precision
+location_home_shuffled_sf_1dp <- location_home_shuffled %>% 
+  mutate(longitude_1dp = round(longitude, 1),
+         latitude_1dp = round(latitude, 1)) %>% 
+  st_as_sf(coords = c("longitude_1dp", "latitude_1dp"), crs = 4326)
+
+
+# Map with actual coordinates
+map_actual <- leaflet(location_home_shuffled_sf) %>% 
+  addTiles() %>% 
+  addCircleMarkers(radius = 3, color = "blue", label = ~as.character(sampno)) %>% 
+  setView(lng = -84.39, lat = 33.78, zoom = 13)
+
+# Map with 3-decimal precision
+map_3dp <- leaflet(location_home_shuffled_sf_3dp) %>% 
+  addTiles() %>% 
+  addCircleMarkers(radius = 3, color = "red", label = ~as.character(sampno)) %>% 
+  setView(lng = -84.39, lat = 33.78, zoom = 13)
+
+# Map with 2-decimal precision
+map_2dp <- leaflet(location_home_shuffled_sf_2dp) %>% 
+  addTiles() %>% 
+  addCircleMarkers(radius = 3, color = "purple", label = ~as.character(sampno)) %>% 
+  setView(lng = -84.39, lat = 33.78, zoom = 13)
+
+# Map with 2-decimal precision
+map_1dp <- leaflet(location_home_shuffled_sf_1dp) %>% 
+  addTiles() %>% 
+  addCircleMarkers(radius = 3, color = "green", label = ~as.character(sampno)) %>% 
+  setView(lng = -84.39, lat = 33.78, zoom = 13)
+
+# Display maps
+sync(map_actual, map_3dp, map_2dp, map_1dp)
+```
+
+> What do you think? Is 3-decimal precision sufficient to protect household privacy, or would further rounding be needed? Consider the trade-off between spatial accuracy for analysis and privacy protection.
+  
+
+## Spatial Jittering
+  
+Another common approach to protect location privacy is spatial jittering, which apply a small random perturbation to each coordinate. Unlike rounding which uniformly reduces precision, jittering preserves variability and distribution but makes it harder to identify exact household locations.
+  
+```{r}
+max_jitter <- 0.0045 # (~500 meters or 0.3 mile)
+
+location_home_shuffled_sf_jitter <- location_home_shuffled %>%
+  mutate(longitude_jitter = longitude + runif(n(), -max_jitter, max_jitter),
+         latitude_jitter = latitude + runif(n(), -max_jitter, max_jitter)) %>%
+  st_as_sf(coords = c("longitude_jitter", "latitude_jitter"), crs = 4326)
+
+# Map with actual coordinates
+map_actual <- leaflet(location_home_shuffled_sf) %>% 
+  addTiles() %>% 
+  addCircleMarkers(radius = 3, color = "blue", label = ~as.character(sampno)) %>% 
+  setView(lng = -84.39, lat = 33.78, zoom = 13)
+
+# Map after jittering
+map_jitter <- leaflet(location_home_shuffled_sf_jitter) %>%
+  addTiles() %>%
+  addCircleMarkers(radius = 3, color = "red", label = ~as.character(sampno)) %>%
+  setView(lng = -84.39, lat = 33.78, zoom = 13)
+
+
+sync(map_actual, map_jitter)
+
+```
+
+
+
+
+
+
+
+
